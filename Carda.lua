@@ -1,3 +1,5 @@
+require "ip"
+
 local funcs = {}
 
 function funcs.grayscaleRGB( img )

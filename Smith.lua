@@ -1,3 +1,5 @@
+require "ip"
+
 local funcs = {}
 
 --{"Posterize", funcs.posterize, {{name = "levels", type = "number", displaytype = "spin", default = 8, min = 2, max = 64}}},
