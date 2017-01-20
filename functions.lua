@@ -1,13 +1,26 @@
-require "ip"
-require "visual"
-local il = require "il"
+--require("ip")
+local Carda = require("Carda")
+local Smith = require("Smith")
 
 local funcs = {}
 
-function funcs.grayscaleRGB( img )
-  print( "Unimplemented" )
-  return img
+local function tableMerge(t1, t2)
+    for k,v in pairs(t2) do
+        if type(v) == "table" then
+            if type(t1[k] or false) == "table" then
+                tableMerge(t1[k] or {}, t2[k] or {})
+            else
+                t1[k] = v
+            end
+        else
+            t1[k] = v
+        end
+    end
+    return t1
 end
+
+tableMerge( funcs, Carda )
+tableMerge( funcs, Smith )
 
 function funcs.negate( img )
   for row = 0, img.height-1 do
@@ -17,73 +30,6 @@ function funcs.negate( img )
       end
     end
   end
-  return img
-end
-
---{"Posterize", funcs.posterize, {{name = "levels", type = "number", displaytype = "spin", default = 8, min = 2, max = 64}}},
-function funcs.posterize( img )
-  print( "Unimplemented" )
-  return img
-end
-
-function funcs.brighten( img )
-  print( "Unimplemented" )
-  return img
-end
-
---{"Gamma", funcs.gamma, {{name = "gamma", type = "string", default = "1.0"}}},
-function funcs.gamma( img )
-  print( "Unimplemented" )
-  return img
-end
-
-function funcs.logscale( img )
-  print( "Unimplemented" )
-  return img
-end
-
-function funcs.cont_pseudocolor( img )
-  print( "Unimplemented" )
-  return img
-end
-
-function funcs.disc_pseudocolor( img )
-  print( "Unimplemented" )
-  return img
-end
-
---{"Bitplane Slice", funcs.slice, {{name = "plane", type = "number", displaytype = "spin", default = 7, min = 0, max = 7}}}
-function funcs.slice( img )
-  print( "Unimplemented" )
-  return img
-end
-
-function funcs.stretch( img )
-  print( "Unimplemented" )
-  return img
-end
-    
---{"Contrast Specify", funcs.stretchSpecify,
---  {{name = "lp", type = "number", displaytype = "spin", default = 1, min = 0, max = 100},
---   {name = "rp", type = "number", displaytype = "spin", default = 99, min = 0, max = 100}}},
-function funcs.stretchSpecify( img )
-  print( "Unimplemented" )
-  return img
-end
-    
-function funcs.equalizeRGB( img )
-  print( "Unimplemented" )
-  return img
-end
-    
---{"Histogram Equalize Clip", funcs.equalizeClip, {{name = "clip %", type = "number", displaytype = "textbox", default = "1.0"}}}
-function funcs.equalizeClip( img )
-  print( "Unimplemented" )
-  return img
-end
-
-function funcs.threshold( img )
-  print( "Unimplemented" )
   return img
 end
 
