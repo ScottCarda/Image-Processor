@@ -17,9 +17,29 @@ function funcs.posterize( img, levels )
   end
   return img
 end
+--linear ramp contrast
+function funcs.lin_contrast( img, lp, rp)
+    
+end
 
 function funcs.logscale( img )
   print( "Unimplemented" )
+  img = il.RGB2YIQ(img)
+  local lut = {}
+  local c = 1
+  for i = 0, 255 do
+    lut[i] = c * math.log(1 + i, 10 )
+  end
+  
+  for row = 0, img.height-1 do
+    for col = 0, img.width-1 do
+      img:at(row,col).y = lut[img:at(row,col).y]
+    end
+  end
+  
+  img = il.YIQ2RGB(img)
+  return img
+  
   return img
 end
 
@@ -32,7 +52,7 @@ end
 --  {{name = "lp", type = "number", displaytype = "spin", default = 1, min = 0, max = 100},
 --   {name = "rp", type = "number", displaytype = "spin", default = 99, min = 0, max = 100}}},
 function funcs.stretchSpecify( img, lp, rp )
-  rp = rp or 100
+  rp = rp or 255
   lp = lp or 0
   local lut = {}
   
@@ -45,7 +65,7 @@ function funcs.stretchSpecify( img, lp, rp )
   local ramp = (rp-lp)/(max - min)
   --create look up table
   for i = 0, 255 do
-    lut[i] = math.floor(( i - lp ) * ramp)
+    lut[i] = ( i - lp ) * ramp
   end
     
   --process pixels using lut
