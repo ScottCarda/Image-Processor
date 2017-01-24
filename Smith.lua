@@ -45,17 +45,19 @@ function funcs.stretchSpecify( img, lp, rp )
   local max
   min, max = get_minmax_intensities(img)
   
-  local denom = max - min
-  local numer = rp - lp
-  local ramp = numer/denom
+  local ramp = (rp-lp)/(max - min)
   --create look up table
   for i = 0, 255 do
     lut[i] = ( i - lp ) * ramp
+  end
+    
+  --process pixels using lut
   for row = 0, img.height-1 do
     for col = 0, img.width-1 do
       img:at(row,col).y = lut[img:at(row,col).y]
     end
   end
+  
   img = YIQ2RGB(img)
   return img
 end
