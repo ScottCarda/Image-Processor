@@ -1,6 +1,6 @@
 require "ip"
 local il = require "il"
-local helpers = require "helper_functs"
+require "helper_functs"
 
 local funcs = {}
 
@@ -40,7 +40,7 @@ function funcs.stretchSpecify( img, lp, rp )
   
   local min 
   local max
-  min, max = helpers.get_minmax_intensities(img)
+  min, max = get_minmax_intensities(img)
   
   local ramp = (rp-lp)/(max - min)
   --create look up table
