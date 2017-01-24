@@ -1,4 +1,5 @@
 require "ip"
+require "helper_functs"
 
 local funcs = {}
 
@@ -17,7 +18,9 @@ function funcs.posterize( img, levels )
 end
 
 function funcs.stretch( img )
-  print( "Unimplemented" )
+  stretchSpecify( img, 0, 255)
+end
+  
   return img
 end
 
@@ -34,8 +37,29 @@ end
 --{"Contrast Specify", funcs.stretchSpecify,
 --  {{name = "lp", type = "number", displaytype = "spin", default = 1, min = 0, max = 100},
 --   {name = "rp", type = "number", displaytype = "spin", default = 99, min = 0, max = 100}}},
-function funcs.stretchSpecify( img )
-  print( "Unimplemented" )
+function funcs.stretchSpecify( img, lp, rp )
+  rp = rp or 255
+  lp = lp or 0
+  local lut = {}
+  
+  img = RGB2YIQ(img)
+  
+  local min 
+  local max
+  min, max = get_minmax_intensities(img)
+  
+  local denom = max - min
+  local numer = rp - lp
+  local ramp = numer/denom
+  --create look up table
+  for i = 0, 255 do
+    lut[i] = ( i - lp ) * ramp
+  for row = 0, img.height-1 do
+    for col = 0, img.width-1 do
+      img:at(row,col).y = lut[img:at(row,col).y]
+    end
+  end
+  img = YIQ2RGB(img)
   return img
 end
 
