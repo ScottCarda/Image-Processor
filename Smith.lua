@@ -17,10 +17,6 @@ function funcs.posterize( img, levels )
   end
   return img
 end
---Contrast Stretch
-function funcs.stretch( img )
-  funcs.stretchSpecify( img, 0, 255)
-end
 
 function funcs.logscale( img )
   print( "Unimplemented" )
