@@ -26,5 +26,15 @@ function count_values(img)
   end
   return hist
 end
+--Scotts in_range function
+function in_range( val )  
+  if val > 255 then
+    return 255
+  elseif val < 0 then
+    return 0
+  else
+    return val
+  end
+end
 
 return helpers

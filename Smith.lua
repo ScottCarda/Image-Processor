@@ -28,7 +28,7 @@ function funcs.logscale( img )
   local lut = {}
   local c = 1
   for i = 0, 255 do
-    lut[i] = c * math.log(1 + i, 10 )
+    lut[i] = in_range( math.floor( c * math.log(1 + i) ) )
   end
   
   for row = 0, img.height-1 do
@@ -38,8 +38,6 @@ function funcs.logscale( img )
   end
   
   img = il.YIQ2RGB(img)
-  return img
-  
   return img
 end
 
@@ -65,7 +63,7 @@ function funcs.stretchSpecify( img, lp, rp )
   local ramp = (rp-lp)/(max - min)
   --create look up table
   for i = 0, 255 do
-    lut[i] = ( i - lp ) * ramp
+    lut[i] = in_range( math.floor( ( i - lp ) * ramp ) )
   end
     
   --process pixels using lut
