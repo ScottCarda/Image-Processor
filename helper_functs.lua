@@ -6,10 +6,10 @@ function get_minmax_intensities( img )
   local max = 0
   for row = 0, img.height-1 do
     for col = 0, img.width-1 do 
-      if min > img:at(row, col ).r
+      if min > img:at(row, col ).r then
         min = img:at(row, col ).r
       end
-      if max < img:at(row, col ).r
+      if max < img:at(row, col ).r then
         max = img:at(row, col ).r
       end
     end
