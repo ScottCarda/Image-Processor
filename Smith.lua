@@ -32,7 +32,7 @@ end
 --  {{name = "lp", type = "number", displaytype = "spin", default = 1, min = 0, max = 100},
 --   {name = "rp", type = "number", displaytype = "spin", default = 99, min = 0, max = 100}}},
 function funcs.stretchSpecify( img, lp, rp )
-  rp = rp or 255
+  rp = rp or 100
   lp = lp or 0
   local lut = {}
   
@@ -45,7 +45,7 @@ function funcs.stretchSpecify( img, lp, rp )
   local ramp = (rp-lp)/(max - min)
   --create look up table
   for i = 0, 255 do
-    lut[i] = ( i - lp ) * ramp
+    lut[i] = math.floor(( i - lp ) * ramp)
   end
     
   --process pixels using lut
