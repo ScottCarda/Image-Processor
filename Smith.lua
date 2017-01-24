@@ -23,11 +23,10 @@ function funcs.lin_contrast( img, lp, rp)
 end
 
 function funcs.logscale( img )
-  print( "Unimplemented" )
   local lut = {}
   local c = 1
   for i = 0, 255 do
-    lut[i] = in_range( math.floor( c * math.log(1 + i) ) )
+    lut[i] = in_range( math.floor( c * math.log(1 + i),256 ) )
   end
   
   for row = 0, img.height-1 do
