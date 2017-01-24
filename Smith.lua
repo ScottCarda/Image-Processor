@@ -24,7 +24,6 @@ end
 
 function funcs.logscale( img )
   print( "Unimplemented" )
-  img = il.RGB2YIQ(img)
   local lut = {}
   local c = 1
   for i = 0, 255 do
@@ -33,11 +32,11 @@ function funcs.logscale( img )
   
   for row = 0, img.height-1 do
     for col = 0, img.width-1 do
-      img:at(row,col).y = lut[img:at(row,col).y]
+      for chan = 0, 2 do
+        img:at(row,col).rgb[chan] = lut[img:at(row,col).rgb[chan]]
+      end
     end
   end
-  
-  img = il.YIQ2RGB(img)
   return img
 end
 
@@ -54,7 +53,7 @@ function funcs.stretchSpecify( img, lp, rp )
   lp = lp or 0
   local lut = {}
   
-  img = il.RGB2YIQ(img)
+  --img = il.RGB2YIQ(img)
   
   local min 
   local max
@@ -69,11 +68,13 @@ function funcs.stretchSpecify( img, lp, rp )
   --process pixels using lut
   for row = 0, img.height-1 do
     for col = 0, img.width-1 do
-      img:at(row,col).y = lut[img:at(row,col).y]
+      for chan = 0, 2 do
+        img:at(row,col).rgb[chan] = lut[img:at(row,col).rgb[chan]]
+      end
     end
   end
   
-  img = il.YIQ2RGB(img)
+  --img = il.YIQ2RGB(img)
   return img
 end
 
