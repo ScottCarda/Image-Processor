@@ -1,5 +1,6 @@
 require "ip"
-require "helper_functs"
+local il = require "il"
+local helpers = require "helper_functs"
 
 local funcs = {}
 
@@ -18,7 +19,7 @@ function funcs.posterize( img, levels )
 end
 --Contrast Stretch
 function funcs.stretch( img )
-  stretchSpecify( img, 0, 255)
+  funcs.stretchSpecify( img, 0, 255)
 end
 
 function funcs.logscale( img )
@@ -39,11 +40,11 @@ function funcs.stretchSpecify( img, lp, rp )
   lp = lp or 0
   local lut = {}
   
-  img = RGB2YIQ(img)
+  img = il.RGB2YIQ(img)
   
   local min 
   local max
-  min, max = get_minmax_intensities(img)
+  min, max = helpers.get_minmax_intensities(img)
   
   local ramp = (rp-lp)/(max - min)
   --create look up table
@@ -58,7 +59,7 @@ function funcs.stretchSpecify( img, lp, rp )
     end
   end
   
-  img = YIQ2RGB(img)
+  img = il.YIQ2RGB(img)
   return img
 end
 
