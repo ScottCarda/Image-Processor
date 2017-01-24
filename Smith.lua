@@ -20,9 +20,6 @@ end
 function funcs.stretch( img )
   stretchSpecify( img, 0, 255)
 end
-  
-  return img
-end
 
 function funcs.logscale( img )
   print( "Unimplemented" )
