@@ -16,7 +16,7 @@ function funcs.posterize( img, levels )
   end
   return img
 end
-
+--Contrast Stretch
 function funcs.stretch( img )
   stretchSpecify( img, 0, 255)
 end
