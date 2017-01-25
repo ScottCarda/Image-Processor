@@ -1,19 +1,8 @@
 require("ip")
 local il = require "il"
+local helpers = require "helper_functs"
 
 local funcs = {}
-
-local function in_range( val )
-  
-  if val > 255 then
-    return 255
-  elseif val < 0 then
-    return 0
-  else
-    return val
-  end
-  
-end
 
 function funcs.grayscaleRGB( img )
   local val
@@ -70,7 +59,7 @@ function funcs.brighten( img, val )
       pix = img:at( row, col )
       
       for chan = 0, 2 do
-        pix.rgb[chan] = in_range( pix.rgb[chan] + val )
+        pix.rgb[chan] = helpers.in_range( pix.rgb[chan] + val )
       end
     
   end
@@ -87,7 +76,7 @@ function funcs.gamma( img, gamma )
       pix = img:at( row, col )
       
       for chan = 0, 2 do
-        pix.rgb[chan] = in_range( c * ( pix.rgb[chan] / c ) ^ gamma )
+        pix.rgb[chan] = helpers.in_range( c * ( pix.rgb[chan] / c ) ^ gamma )
       end
     
   end
@@ -133,35 +122,14 @@ function funcs.disc_pseudocolor( img )
   return img
 end
 
-function funcs.get_hist( img )
-  local pix
-  local hist = {}
-  
-  -- initialize the histogram
-  for i = 0, 256 do
-    hist[i] = 0
-  end
+
+
+function funcs.auto_stretch( img )
   
   -- convert image from RGB to YIQ
   il.RGB2YIQ( img )
   
-  for row, col in img:pixels() do
-    
-    pix = img:at( row, col )
-    
-    hist[pix.y] = hist[pix.y] + 1
-    
-  end
-  
-  -- convert image from RGB to YIQ
-  il.YIQ2RGB( img )
-  
-  return hist
-end
-
-function funcs.auto_stretch( img )
-  
-  local hist = funcs.get_hist( img )
+  local hist = helpers.get_hist( img, 0 )
   
   local min = 0
   while hist[min] == 0 and min < 255 do
@@ -174,20 +142,41 @@ function funcs.auto_stretch( img )
     
   local slope = 255 / ( max - min )
   
-  img = il.RGB2YIQ( img )
   local pix
   for row, col in img:pixels() do
     pix = img:at( row, col )
-    pix.y = in_range( slope * ( pix.y - min ) )
+    pix.y = helpers.in_range( slope * ( pix.y - min ) )
   end
   
+  -- convert image from YIQ to RGB
   il.YIQ2RGB( img )
   
   return img
 end
 
 function funcs.equalizeRGB( img )
-  print( "Unimplemented" )
+  
+  -- convert image from RGB to YIQ
+  il.RGB2YIQ( img )
+  
+  local hist = helpers.get_hist( img )
+  local size = img.height * img.width
+  
+  local sum = 0
+  for i = 0, 255 do
+    sum = sum + hist[i] / size
+    hist[i] = helpers.round( sum )
+  end
+  
+  local pix
+  for row, col in img:pixels() do
+    pix = img:at( row, col )
+    pix.y = hist[pix.y]
+  end
+  
+  -- convert image from YIQ to RGB
+  il.YIQ2RGB( img )
+  
   return img
 end
 

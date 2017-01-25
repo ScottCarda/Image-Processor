@@ -32,6 +32,7 @@ imageMenu("Histogram processes",
     {"Histogram Equalize RGB", funcs.equalizeRGB},
     --{"Histogram Equalize Clip", funcs.equalizeClip, {{name = "clip %", type = "number", displaytype = "textbox", default = "1.0"}}}
     {"Histogram Equalize Clip", funcs.equalizeClip},
+    {"Hist Histogram", il.equalizeRGB},
     {"Display Intensity Histogram", funcs.showHistogram}
   }
 )

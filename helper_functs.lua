@@ -1,7 +1,8 @@
 require ("ip")
+local il = require "il"
 local helpers = {}
 
-function get_minmax_intensities( img )
+function helpers.get_minmax_intensities( img )
   local min = 256
   local max = 0
   for row = 0, img.height-1 do
@@ -17,7 +18,7 @@ function get_minmax_intensities( img )
   return min, max
 end
 
-function count_values(img)
+function helpers.count_values(img)
   local hist = {}
   for row = 0, img.height-1 do
     for col = 0, img.width-1 do 
@@ -27,7 +28,8 @@ function count_values(img)
   return hist
 end
 --Scotts in_range function
-function in_range( val )  
+function helpers.in_range( val )  
+  
   if val > 255 then
     return 255
   elseif val < 0 then
@@ -35,6 +37,31 @@ function in_range( val )
   else
     return val
   end
+  
+end
+
+function helpers.get_hist( img, chan )
+  local pix
+  local hist = {}
+  
+  -- initialize the histogram
+  for i = 0, 256 do
+    hist[i] = 0
+  end
+  
+  for row, col in img:pixels() do
+    
+    pix = img:at( row, col )
+    
+    hist[pix.rgb[char]] = hist[pix.rgb[char]] + 1
+    
+  end
+  
+  return hist
+end
+
+function helpers.round( val )
+  return math.floor( val + 0.5 )
 end
 
 return helpers

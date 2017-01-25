@@ -1,6 +1,6 @@
 require "ip"
 local il = require "il"
-require "helper_functs"
+local helpers = require "helper_functs"
 
 local funcs = {}
 
@@ -25,7 +25,7 @@ end
 function funcs.logscale( img )
   local lut = {}
   for i = 0, 255 do
-    lut[i] = in_range(255 * math.log(1+i,256))
+    lut[i] = helpers.in_range(255 * math.log(1+i,256))
   end
   return img:mapPixels(function( r, g, b )
     return lut[r], lut[g], lut[b]
@@ -50,12 +50,12 @@ function funcs.stretchSpecify( img, lp, rp )
   
   local min 
   local max
-  min, max = get_minmax_intensities(img)
+  min, max = helpers.get_minmax_intensities(img)
   
   local ramp = (rp-lp)/(max - min)
   --create look up table
   for i = 0, 255 do
-    lut[i] = in_range( math.floor( ( i - lp ) * ramp ) )
+    lut[i] = helpers.in_range( math.floor( ( i - lp ) * ramp ) )
   end
     
   --process pixels using lut
