@@ -7,8 +7,8 @@ imageMenu("Point processes",
   {
     {"Grayscale RGB", funcs.grayscaleRGB},
     {"Negate", funcs.negate},
-    --{"Posterize", funcs.posterize, {{name = "levels", type = "number", displaytype = "spin", default = 8, min = 2, max = 64}}},
-    {"Posterize", funcs.posterize},
+    {"Posterize", funcs.posterize, {{name = "levels", type = "number", displaytype = "spin", default = 8, min = 2, max = 64}}},
+    --{"Posterize", funcs.posterize},
     {"Brighten", funcs.brighten, {{name = "Value", type = "number", displaytype = "slider", default = 128, min = 0, max = 255}}},
     --{"Gamma", funcs.gamma, {{name = "gamma", type = "string", default = "1.0"}}},
     {"Gamma", funcs.gamma, {{name = "Gamma", type = "string", default = "1.0"}}},
@@ -23,11 +23,11 @@ imageMenu("Point processes",
 
 imageMenu("Histogram processes",
   {
-    {"Contrast Stretch", funcs.stretch},
-    --{"Contrast Specify", funcs.stretchSpecify,
-    --  {{name = "lp", type = "number", displaytype = "spin", default = 1, min = 0, max = 100},
-    --   {name = "rp", type = "number", displaytype = "spin", default = 99, min = 0, max = 100}}},
-    {"Contrast Specify", funcs.stretchSpecify},
+    {"Contrast Stretch", funcs.stretchSpecify},
+    {"Contrast Specify", funcs.stretchSpecify,
+      {{name = "lp", type = "number", displaytype = "spin", default = 1, min = 0, max = 100},
+       {name = "rp", type = "number", displaytype = "spin", default = 99, min = 0, max = 100}}},
+    --{"Contrast Specify", funcs.stretchSpecify},
     {"Histogram Equalize RGB", funcs.equalizeRGB},
     --{"Histogram Equalize Clip", funcs.equalizeClip, {{name = "clip %", type = "number", displaytype = "textbox", default = "1.0"}}}
     {"Histogram Equalize Clip", funcs.equalizeClip}
