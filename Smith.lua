@@ -23,10 +23,12 @@ function funcs.lin_contrast( img, lp, rp)
 end
 
 function funcs.logscale( img )
+  local lut = {}
+  for i = 0, 255 do
+    lut[i] = in_range(255 * math.log(1+i,256))
+  end
   return img:mapPixels(function( r, g, b )
-    return math.floor(255*math.log(1+r,256)), 
-            math.floor(255*math.log(1+g,256)), 
-            math.floor(255*math.log(1+b,256))
+    return lut[r], lut[g], lut[b]
     end
   )
 end
