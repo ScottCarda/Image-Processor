@@ -23,11 +23,20 @@ tableMerge( funcs, Carda )
 tableMerge( funcs, Smith )
 
 function funcs.negate( img )
+  
   for row, col in img:pixels() do
     for chan = 0, 2 do
       img:at( row, col ).rgb[chan] = 255 - img:at( row, col ).rgb[chan]
     end
   end
+  
+  return img
+end
+
+function funcs.showHistogram( img )
+  
+  -- Unimplemented
+  
   return img
 end
 

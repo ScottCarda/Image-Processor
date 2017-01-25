@@ -31,14 +31,14 @@ imageMenu("Histogram processes",
     --{"Contrast Specify", funcs.stretchSpecify},
     {"Histogram Equalize RGB", funcs.equalizeRGB},
     --{"Histogram Equalize Clip", funcs.equalizeClip, {{name = "clip %", type = "number", displaytype = "textbox", default = "1.0"}}}
-    {"Histogram Equalize Clip", funcs.equalizeClip}
+    {"Histogram Equalize Clip", funcs.equalizeClip},
+    {"Display Intensity Histogram", funcs.showHistogram}
   }
 )
 
 imageMenu("Misc",
   {
     {"Binary Threshold", funcs.threshold, {{name = "Threshold", type = "number", displaytype = "slider", default = 128, min = 0, max = 255}}}
-    --{"Binary Threshold", funcs.threshold}
   }
 )
 
