@@ -157,15 +157,15 @@ end
 function funcs.equalizeRGB( img )
   
   -- convert image from RGB to YIQ
-  il.RGB2YIQ( img )
+  --[[il.RGB2YIQ( img )
   
-  local hist = helpers.get_hist( img )
+  local hist = helpers.get_hist( img, 0 )
   local size = img.height * img.width
   
   local sum = 0
   for i = 0, 255 do
     sum = sum + hist[i] / size
-    hist[i] = helpers.round( sum )
+    hist[i] = helpers.round( 255 * sum )
   end
   
   local pix
@@ -175,7 +175,26 @@ function funcs.equalizeRGB( img )
   end
   
   -- convert image from YIQ to RGB
-  il.YIQ2RGB( img )
+  il.YIQ2RGB( img )]]
+  
+  local size = img.height * img.width
+  local sum
+  local pix
+  
+  for chan = 0, 2 do
+    local hist = helpers.get_hist( img, chan )
+    
+    sum = 0
+    for i = 0, 255 do
+      sum = sum + hist[i] / size
+      hist[i] = helpers.round( 255 * sum )
+    end
+    
+    for row, col in img:pixels() do
+      pix = img:at( row, col )
+      pix.rgb[chan] = hist[ pix.rgb[chan] ]
+    end
+  end
   
   return img
 end
