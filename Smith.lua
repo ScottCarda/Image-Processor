@@ -23,7 +23,6 @@ function funcs.lin_contrast( img, lp, rp)
 end
 
 function funcs.logscale( img )
-<<<<<<< HEAD
   return img:mapPixels(function( r, g, b )
     return math.floor(255*math.log(1+r,256)), 
             math.floor(255*math.log(1+g,256)), 
