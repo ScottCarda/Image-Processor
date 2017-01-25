@@ -23,21 +23,12 @@ function funcs.lin_contrast( img, lp, rp)
 end
 
 function funcs.logscale( img )
-  print( "Unimplemented" )
-  local lut = {}
-  local c = 1
-  for i = 0, 255 do
-    lut[i] = in_range( math.floor( c * math.log(1 + i) ) )
-  end
-  
-  for row = 0, img.height-1 do
-    for col = 0, img.width-1 do
-      for chan = 0, 2 do
-        img:at(row,col).rgb[chan] = lut[img:at(row,col).rgb[chan]]
-      end
+  return img:mapPixels(function( r, g, b )
+    return math.floor(255*math.log(1+r,256)), 
+            math.floor(255*math.log(1+g,256)), 
+            math.floor(255*math.log(1+b,256))
     end
-  end
-  return img
+  )
 end
 
 function funcs.cont_pseudocolor( img )
@@ -49,7 +40,7 @@ end
 --  {{name = "lp", type = "number", displaytype = "spin", default = 1, min = 0, max = 100},
 --   {name = "rp", type = "number", displaytype = "spin", default = 99, min = 0, max = 100}}},
 function funcs.stretchSpecify( img, lp, rp )
-  rp = rp or 255
+  rp = rp or 100
   lp = lp or 0
   local lut = {}
   
