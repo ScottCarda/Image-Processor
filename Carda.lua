@@ -19,8 +19,7 @@ function funcs.grayscaleRGB( img )
   local val
   local pix
   
-  for row = 0, img.height-1 do
-    for col = 0, img.width-1 do
+  for row, col in img:pixels() do
       
       pix = img:at( row, col )
       
@@ -32,8 +31,7 @@ function funcs.grayscaleRGB( img )
       for chan = 0, 2 do
         pix.rgb[chan] = val
       end
-      
-    end
+    
   end
   return img
 end
@@ -45,8 +43,7 @@ function funcs.threshold( img, threshold )
   -- convert image from RGB to YIQ
   il.RGB2YIQ( img )
   
-  for row = 0, img.height-1 do
-    for col = 0, img.width-1 do
+  for row, col in img:pixels() do
       
       pix = img:at( row, col )
       
@@ -59,8 +56,7 @@ function funcs.threshold( img, threshold )
       for chan = 0, 2 do
         pix.rgb[chan] = val
       end
-      
-    end
+    
   end
   
   return img
@@ -69,16 +65,14 @@ end
 function funcs.brighten( img, val )
   local pix
   
-  for row = 0, img.height-1 do
-    for col = 0, img.width-1 do
+  for row, col in img:pixels() do
       
       pix = img:at( row, col )
       
       for chan = 0, 2 do
         pix.rgb[chan] = in_range( pix.rgb[chan] + val )
       end
-      
-    end
+    
   end
   
   return img
@@ -88,16 +82,14 @@ function funcs.gamma( img, gamma )
   local c = 255
   local pix
   
-  for row = 0, img.height-1 do
-    for col = 0, img.width-1 do
+  for row, col in img:pixels() do
       
       pix = img:at( row, col )
       
       for chan = 0, 2 do
         pix.rgb[chan] = in_range( c * ( pix.rgb[chan] / c ) ^ gamma )
       end
-      
-    end
+    
   end
   
   return img
@@ -126,8 +118,7 @@ function funcs.disc_pseudocolor( img )
   -- convert image from RGB to YIQ
   il.RGB2YIQ( img )
   
-  for row = 0, img.height-1 do
-    for col = 0, img.width-1 do
+  for row, col in img:pixels() do
       
       pix = img:at( row, col )
       
@@ -136,15 +127,62 @@ function funcs.disc_pseudocolor( img )
       for chan = 0, 2 do
         pix.rgb[chan] = color_table[color+1][chan+1]
       end
-      
-    end
+    
   end
   
   return img
 end
 
-function funcs.stretch( img )
-  print( "Unimplemented" )
+function funcs.get_hist( img )
+  local pix
+  local hist = {}
+  
+  -- initialize the histogram
+  for i = 0, 256 do
+    hist[i] = 0
+  end
+  
+  -- convert image from RGB to YIQ
+  il.RGB2YIQ( img )
+  
+  for row, col in img:pixels() do
+    
+    pix = img:at( row, col )
+    
+    hist[pix.y] = hist[pix.y] + 1
+    
+  end
+  
+  -- convert image from RGB to YIQ
+  il.YIQ2RGB( img )
+  
+  return hist
+end
+
+function funcs.auto_stretch( img )
+  
+  local hist = funcs.get_hist( img )
+  
+  local min = 0
+  while hist[min] == 0 and min < 255 do
+    min = min + 1
+  end
+  local max = 255
+  while hist[max] == 0 and max > min do
+    max = max - 1
+  end
+    
+  local slope = 255 / ( max - min )
+  
+  img = il.RGB2YIQ( img )
+  local pix
+  for row, col in img:pixels() do
+    pix = img:at( row, col )
+    pix.y = in_range( slope * ( pix.y - min ) )
+  end
+  
+  il.YIQ2RGB( img )
+  
   return img
 end
 

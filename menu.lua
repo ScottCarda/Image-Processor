@@ -23,7 +23,8 @@ imageMenu("Point processes",
 
 imageMenu("Histogram processes",
   {
-    {"Contrast Stretch", funcs.stretchSpecify},
+    {"Contrast Stretch", funcs.auto_stretch},
+    {"His Contrast Stretch", il.stretch},
     {"Contrast Specify", funcs.stretchSpecify,
       {{name = "lp", type = "number", displaytype = "spin", default = 1, min = 0, max = 100},
        {name = "rp", type = "number", displaytype = "spin", default = 99, min = 0, max = 100}}},

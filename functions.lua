@@ -23,11 +23,9 @@ tableMerge( funcs, Carda )
 tableMerge( funcs, Smith )
 
 function funcs.negate( img )
-  for row = 0, img.height-1 do
-    for col = 0, img.width-1 do
-      for chan = 0, 2 do
-        img:at( row, col ).rgb[chan] = 255 - img:at( row, col ).rgb[chan]
-      end
+  for row, col in img:pixels() do
+    for chan = 0, 2 do
+      img:at( row, col ).rgb[chan] = 255 - img:at( row, col ).rgb[chan]
     end
   end
   return img
