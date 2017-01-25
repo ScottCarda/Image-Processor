@@ -53,7 +53,7 @@ function helpers.get_hist( img, chan )
     
     pix = img:at( row, col )
     
-    hist[pix.rgb[char]] = hist[pix.rgb[char]] + 1
+    hist[pix.rgb[chan]] = hist[pix.rgb[chan]] + 1
     
   end
   
