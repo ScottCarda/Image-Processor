@@ -63,5 +63,22 @@ end
 function helpers.round( val )
   return math.floor( val + 0.5 )
 end
+--get percent location given the image histogram, number of pixels in the image,  percent pixel from
+function helpers.get_percent_location( hist, num_pixels, percent, start )
+  local count = 0
+  local dir = 1
+  local last = 255
+  local found = start
+  if start == 255 then
+    dir = -1
+    last = 0
+  end
+  for i = start, last or count / num_pixels > percent, dir do
+    count = count + hist[i]
+    found = i+dir
+  end
+  return found
+end
+
 
 return helpers
