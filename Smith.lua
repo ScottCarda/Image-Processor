@@ -8,11 +8,11 @@ local funcs = {}
 function funcs.posterize( img, levels, model )
   --convert image based on model selected
   if model == "YIQ" then
-    img = img.RGB2YIQ()
+    img = il.RGB2YIQ(img)
   elseif model == "YUV" then
-    img = img.RGB2YUV()
+    img = il.RGB2YUV(img)
   elseif model == "IHS" then
-    img = img.RGB2IHS()
+    img = il.RGB2IHS(img)
   end
   
   --posterize code
@@ -21,17 +21,17 @@ function funcs.posterize( img, levels, model )
   for row = 0, img.height-1 do
     for col = 0, img.width-1 do
       for chan = 0, 2 do
-        img:at(row, col ).rgb[chan] = math.floor(img:at( row, col ).rgb[chan]/interval) * quanta
+        img:at(row, col ).rgb[chan] = helpers.in_range(math.floor(img:at( row, col ).rgb[chan]/interval) * quanta)
       end
     end
   end
   --convert image back to RGB
   if model == "YIQ" then
-    img = img.YIQ2RGB()
+    img = il.YIQ2RGB(img)
   elseif model == "YUV" then
-    img = img.YUV2RGB()
+    img = il.YUV2RGB(img)
   elseif model == "IHS" then
-    img = img.IHS2RGB()
+    img = il.IHS2RGB(img)
   end
   
   return img
