@@ -54,6 +54,8 @@ end
 function funcs.brighten( img, val )
   local pix
   
+  --il.RGB2YIQ( img )
+  
   for row, col in img:pixels() do
       
       pix = img:at( row, col )
@@ -61,12 +63,17 @@ function funcs.brighten( img, val )
       for chan = 0, 2 do
         pix.rgb[chan] = helpers.in_range( pix.rgb[chan] + val )
       end
+      
+      --pix.y = helpers.in_range( pix.y + val )
     
   end
+  
+  --il.YIQ2RGB( img )
   
   return img
 end
 
+-- RGB
 function funcs.gamma( img, gamma )
   local c = 255
   local pix
@@ -154,6 +161,7 @@ function funcs.auto_stretch( img )
   return img
 end
 
+-- RGB
 function funcs.equalizeRGB( img )
   
   -- convert image from RGB to YIQ
@@ -199,9 +207,25 @@ function funcs.equalizeRGB( img )
   return img
 end
 
---{"Bitplane Slice", funcs.slice, {{name = "plane", type = "number", displaytype = "spin", default = 7, min = 0, max = 7}}}
-function funcs.slice( img )
-  print( "Unimplemented" )
+-- RGB
+function funcs.slice( img, plane )
+  local pix
+  local bit
+  
+  --il.RGB2YIQ( img )
+  
+  for row, col in img:pixels() do
+    pix = img:at( row, col )
+    
+    for chan = 0, 2 do
+      bit = ( pix.rgb[chan] % 2^(plane+1) - pix.rgb[chan] % 2^plane ) / 2^plane
+      pix.rgb[chan] = helpers.in_range( 255 * math.floor( bit ) )
+    end
+    
+  end
+  
+  --il.YIQ2RGB( img )
+  
   return img
 end
 

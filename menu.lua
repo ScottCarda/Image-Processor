@@ -9,7 +9,7 @@ imageMenu("Point processes",
     {"Negate", funcs.negate},
     {"Posterize", funcs.posterize, {{name = "levels", type = "number", displaytype = "spin", default = 8, min = 2, max = 64}}},
     --{"Posterize", funcs.posterize},
-    {"Brighten", funcs.brighten, {{name = "Value", type = "number", displaytype = "slider", default = 128, min = 0, max = 255}}},
+    {"Brighten", funcs.brighten, {{name = "Value", type = "number", displaytype = "slider", default = 0, min = -255, max = 255}}},
     --{"Gamma", funcs.gamma, {{name = "gamma", type = "string", default = "1.0"}}},
     {"Gamma", funcs.gamma, {{name = "Gamma", type = "string", default = "1.0"}}},
     {"His Gamma", il.gamma, {{name = "Gamma", type = "string", default = "1.0"}}},
@@ -18,7 +18,8 @@ imageMenu("Point processes",
     {"Disc Pseudocolor", funcs.disc_pseudocolor},
     {"His Pseudocolor", il.pseudocolor2},
     --{"Bitplane Slice", funcs.slice, {{name = "plane", type = "number", displaytype = "spin", default = 7, min = 0, max = 7}}}
-    {"Bitplane Slice", funcs.slice}
+    {"Bitplane Slice", funcs.slice, {{name = "Plane", type = "number", displaytype = "spin", default = 7, min = 0, max = 7}}},
+    {"His Bitplane Slice", il.slice, {{name = "plane", type = "number", displaytype = "spin", default = 7, min = 0, max = 7}}}
   }
 )
 
