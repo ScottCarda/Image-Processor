@@ -5,7 +5,17 @@ local helpers = require "helper_functs"
 local funcs = {}
 
 --{"Posterize", funcs.posterize, {{name = "levels", type = "number", displaytype = "spin", default = 8, min = 2, max = 64}}},
-function funcs.posterize( img, levels )
+function funcs.posterize( img, levels, model )
+  --convert image based on model selected
+  if model == "YIQ" then
+    img = img.RGB2YIQ()
+  elseif model == "YUV" then
+    img = img.RGB2YUV()
+  elseif model == "IHS" then
+    img = img.RGB2IHS()
+  end
+  
+  --posterize code
   local interval = 256/4
   local quanta = math.floor(255/(levels-1))
   for row = 0, img.height-1 do
@@ -15,6 +25,15 @@ function funcs.posterize( img, levels )
       end
     end
   end
+  --convert image back to RGB
+  if model == "YIQ" then
+    img = img.YIQ2RGB()
+  elseif model == "YUV" then
+    img = img.YUV2RGB()
+  elseif model == "IHS" then
+    img = img.IHS2RGB()
+  end
+  
   return img
 end
 --linear ramp contrast

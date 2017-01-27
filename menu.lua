@@ -7,7 +7,7 @@ imageMenu("Point processes",
   {
     {"Grayscale RGB", funcs.grayscaleRGB},
     {"Negate", funcs.negate},
-    {"Posterize", funcs.posterize, {{name = "levels", type = "number", displaytype = "spin", default = 8, min = 2, max = 64}}},
+    {"Posterize", funcs.posterize, {{name = "levels", type = "number", displaytype = "spin", default = 8, min = 2, max = 64}, {name = "Model", type = "string", default = "RGB"}}},
     --{"Posterize", funcs.posterize},
     {"Brighten", funcs.brighten, {{name = "Value", type = "number", displaytype = "slider", default = 0, min = -255, max = 255}}},
     --{"Gamma", funcs.gamma, {{name = "gamma", type = "string", default = "1.0"}}},
