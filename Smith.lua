@@ -53,8 +53,19 @@ function funcs.logscale( img )
 end
 
 function funcs.cont_pseudocolor( img )
-  print( "Unimplemented" )
-  return img
+  local rlut = {}
+  local glut = {}
+  local blut = {}
+  
+  for i = 0, 255 do
+    rlut[i] = helpers.in_range( math.pow(i-64, 2) + 255)
+    glut[i] = helpers.in_range(  math.floor(math.sqrt(i) + .5 ))
+    blut[i] = helpers.in_range( -math.abs(i-128) + 128)
+  end
+  return img:mapPixels(function( r, g, b )
+    return rlut[r], glut[g], blut[b]
+    end
+  )
 end
 
 --{"Contrast Specify", funcs.stretchSpecify,
