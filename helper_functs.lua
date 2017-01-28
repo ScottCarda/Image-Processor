@@ -73,9 +73,12 @@ function helpers.get_percent_location( hist, num_pixels, percent, start )
     dir = -1
     last = 0
   end
-  for i = start, last or count / num_pixels > percent, dir do
+  for i = start, last, dir do
+    if (count / num_pixels) * 100 > percent then
+      return i
+    end
     count = count + hist[i]
-    found = i+dir
+    found = i
   end
   return found
 end
