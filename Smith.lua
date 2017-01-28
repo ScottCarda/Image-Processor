@@ -58,7 +58,7 @@ function funcs.cont_pseudocolor( img )
   local blut = {}
   
   for i = 0, 255 do
-    rlut[i] = helpers.in_range( math.pow(i-64, 2) + 255)
+    rlut[i] = helpers.in_range(  math.pow(i-64, 2) + 255)
     glut[i] = helpers.in_range(  math.floor(math.sqrt(i) + .5 ))
     blut[i] = helpers.in_range( -math.abs(i-128) + 128)
   end
@@ -101,7 +101,7 @@ function funcs.stretchPercent( img, lp, rp)
   local h = helpers.get_hist(img, 0)
   local min = helpers.get_percent_location(h, img.width * img.height, lp, 0)
   local max = helpers.get_percent_location( h, img.width * img.height, rp, 255 )
-  funcs.stretchSpecify(img, min, max, "percent")
+  return funcs.stretchSpecify(img, min, max, "percent")
 end
 
 --{"Histogram Equalize Clip", funcs.equalizeClip, {{name = "clip %", type = "number", displaytype = "textbox", default = "1.0"}}}
