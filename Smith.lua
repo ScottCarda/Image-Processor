@@ -60,10 +60,13 @@ end
 --{"Contrast Specify", funcs.stretchSpecify,
 --  {{name = "lp", type = "number", displaytype = "spin", default = 1, min = 0, max = 100},
 --   {name = "rp", type = "number", displaytype = "spin", default = 255, min = 0, max = 100}}},
-function funcs.stretchSpecify( img, lp, rp )
+function funcs.stretchSpecify( img, lp, rp, method )
   local lut = {}
   
-  img = il.RGB2YIQ(img)
+  if method ~= "percent" then
+    img = il.RGB2YIQ(img)
+  end
+  
   local ramp = 255/(rp-lp)  
   --create look up table
   for i = 0, 255 do
@@ -78,8 +81,16 @@ function funcs.stretchSpecify( img, lp, rp )
   
   img = il.YIQ2RGB(img)
   
-  return img;
+  return img
   
+end
+
+function funcs.stretchPercent( img, lp, rp)
+  img = il.RGB2YIQ(img)
+  local h = helpers.get_hist(img, 0)
+  local min = helpers.get_percent_location(h, img.width * img.height, lp, 0)
+  local max = helpers.get_percent_location( h, img.width * img.height, rp, 255 )
+  funcs.stretchSpecify(img, min, max, "percent")
 end
 
 --{"Histogram Equalize Clip", funcs.equalizeClip, {{name = "clip %", type = "number", displaytype = "textbox", default = "1.0"}}}
