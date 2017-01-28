@@ -59,35 +59,27 @@ end
 
 --{"Contrast Specify", funcs.stretchSpecify,
 --  {{name = "lp", type = "number", displaytype = "spin", default = 1, min = 0, max = 100},
---   {name = "rp", type = "number", displaytype = "spin", default = 99, min = 0, max = 100}}},
+--   {name = "rp", type = "number", displaytype = "spin", default = 255, min = 0, max = 100}}},
 function funcs.stretchSpecify( img, lp, rp )
-  rp = rp or 100
-  lp = lp or 0
   local lut = {}
   
-  --img = il.RGB2YIQ(img)
-  
-  local min 
-  local max
-  min, max = helpers.get_minmax_intensities(img)
-  
-  local ramp = (rp-lp)/(max - min)
+  img = il.RGB2YIQ(img)
+  local ramp = 255/(rp-lp)  
   --create look up table
   for i = 0, 255 do
     lut[i] = helpers.in_range( math.floor( ( i - lp ) * ramp ) )
   end
-    
-  --process pixels using lut
+  
   for row = 0, img.height-1 do
     for col = 0, img.width-1 do
-      for chan = 0, 2 do
-        img:at(row,col).rgb[chan] = lut[img:at(row,col).rgb[chan]]
-      end
+      img:at(row, col ).r = lut[img:at(row, col).r]
     end
   end
   
-  --img = il.YIQ2RGB(img)
-  return img
+  img = il.YIQ2RGB(img)
+  
+  return img;
+  
 end
 
 --{"Histogram Equalize Clip", funcs.equalizeClip, {{name = "clip %", type = "number", displaytype = "textbox", default = "1.0"}}}
