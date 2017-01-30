@@ -45,7 +45,7 @@ function helpers.get_hist( img, chan )
   local hist = {}
   
   -- initialize the histogram
-  for i = 0, 256 do
+  for i = 0, 255 do
     hist[i] = 0
   end
   
