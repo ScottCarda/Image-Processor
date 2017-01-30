@@ -16,7 +16,7 @@ function funcs.posterize( img, levels, model )
   end
   
   --posterize code
-  local interval = 256/4
+  local interval = 256/levels
   local quanta = math.floor(255/(levels-1))
   for row = 0, img.height-1 do
     for col = 0, img.width-1 do
@@ -103,7 +103,7 @@ function funcs.stretchPercent( img, lp, rp)
   img = il.RGB2YIQ(img)
   local h = helpers.get_hist(img, 0)
   local min = helpers.get_percent_location(h, img.width * img.height, lp, 0)
-  local max = helpers.get_percent_location( h, img.width * img.height, rp, 255 )
+  local max = helpers.get_percent_location( h, img.width * img.height, rp, 0 )
   return funcs.stretchSpecify(img, min, max, "percent")
 end
 
