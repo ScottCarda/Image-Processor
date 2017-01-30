@@ -73,6 +73,9 @@ end
 --   {name = "rp", type = "number", displaytype = "spin", default = 255, min = 0, max = 100}}},
 function funcs.stretchSpecify( img, lp, rp, method )
   local lut = {}
+  if lp > rp then
+    lp, rp = rp, lp
+  end
   
   if method ~= "percent" then
     img = il.RGB2YIQ(img)
