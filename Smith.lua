@@ -7,11 +7,11 @@ local funcs = {}
 --{"Posterize", funcs.posterize, {{name = "levels", type = "number", displaytype = "spin", default = 8, min = 2, max = 64}}},
 function funcs.posterize( img, levels, model )
   --convert image based on model selected
-  if model == "YIQ" then
+  if model == "YIQ" or model == "yiq" then
     img = il.RGB2YIQ(img)
-  elseif model == "YUV" then
+  elseif model == "YUV"or model == "YUV" then
     img = il.RGB2YUV(img)
-  elseif model == "IHS" then
+  elseif model == "IHS"or model == "ihs" then
     img = il.RGB2IHS(img)
   end
   
@@ -36,10 +36,6 @@ function funcs.posterize( img, levels, model )
   
   return img
 end
---linear ramp contrast
-function funcs.lin_contrast( img, lp, rp)
-    
-end
 
 function funcs.logscale( img )
   local lut = {}
@@ -58,19 +54,15 @@ function funcs.cont_pseudocolor( img )
   local blut = {}
   
   for i = 0, 255 do
-    rlut[i] = helpers.in_range(  math.pow(i-64, 2) + 255)
-    glut[i] = helpers.in_range(  math.floor(math.sqrt(i) + .5 ))
-    blut[i] = helpers.in_range( -math.abs(i-128) + 128)
+    rlut[i] = helpers.in_range(  (i - 20) % 256)
+    glut[i] = helpers.in_range(  (i + 47 )% 256)
+    blut[i] = helpers.in_range( -math.abs(i-128))
   end
   return img:mapPixels(function( r, g, b )
     return rlut[r], glut[g], blut[b]
     end
   )
 end
-
---{"Contrast Specify", funcs.stretchSpecify,
---  {{name = "lp", type = "number", displaytype = "spin", default = 1, min = 0, max = 100},
---   {name = "rp", type = "number", displaytype = "spin", default = 255, min = 0, max = 100}}},
 function funcs.stretchSpecify( img, lp, rp, method )
   local lut = {}
   if lp > rp then
@@ -106,16 +98,67 @@ function funcs.stretchPercent( img, lp, rp)
   local max = helpers.get_percent_location( h, img.width * img.height, rp, 0 )
   return funcs.stretchSpecify(img, min, max, "percent")
 end
-
---{"Histogram Equalize Clip", funcs.equalizeClip, {{name = "clip %", type = "number", displaytype = "textbox", default = "1.0"}}}
-function funcs.equalizeClip( img )
-  print( "Unimplemented" )
+function funcs.equalizeClip( img, perc )
+  local size = img.height * img.width
+  local sum
+  local pix
+  perc = 1/2
+  
+  for chan = 0, 2 do
+    local hist = helpers.get_hist( img, chan )
+    local min = helpers.get_percent_location( hist, img.width* img.height, perc, 0)
+    local max = helpers.get_percent_location( hist, img.width* img.height, perc, 255)
+    for k = 0, min-1 do
+      hist[k] = 0
+    end
+    for k = max, 255 do
+      hist[k] = 0
+    end
+    sum = 0
+    for i = 0, 255 do
+      sum = sum + hist[i] / size
+      hist[i] = helpers.round( 255 * sum )
+    end
+    
+    for row, col in img:pixels() do
+      pix = img:at( row, col )
+      pix.rgb[chan] = hist[ pix.rgb[chan] ]
+    end
+  end
+  
   return img
 end
-
-function funcs.other( img )
-  print( "Unimplemented" )
-  return img
+--[[
+function funcs.colorCube( img )
+local pix = img:at( 0, 0 )
+local lut = funcs.newAutotable(3)
+  for r = 0, 255 do
+    for g = 0, 255 do
+      for b = 0, 255 do
+        pix.r = b - r
+        pix.g = g - 
+        lut[r][g][b] = pix
+  end
+  return img:mapPixels(function( r, g, b )
+    return rlut[r], glut[g], blut[b]
+  end
+  )
 end
+
+function funcs.newAutotable(dim)
+    local MT = {};
+    for i=1, dim do
+        MT[i] = {__index = function(t, k)
+                    if i < dim then
+                      t[k] = setmetatable({}, MT[i+1])
+                      return t[k];
+                    end
+                  end
+                }
+    end
+    return setmetatable({}, MT[1]);
+end
+--]]
+
 
 return funcs
