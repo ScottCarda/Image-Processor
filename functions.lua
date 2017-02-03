@@ -1,4 +1,3 @@
---require("ip")
 local Carda = require("Carda")
 local Smith = require("Smith")
 
@@ -29,13 +28,6 @@ function funcs.negate( img )
       img:at( row, col ).rgb[chan] = 255 - img:at( row, col ).rgb[chan]
     end
   end
-  
-  return img
-end
-
-function funcs.showHistogram( img )
-  
-  -- Unimplemented
   
   return img
 end
