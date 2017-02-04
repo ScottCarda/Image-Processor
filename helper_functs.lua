@@ -114,6 +114,37 @@ function helpers.distribute_cut_pixels( hist, cut_pixels, largest_bins, size)
   return hist
 end
 
+function helpers.convert_img( img, model)
+  --convert image based on model selected
+  if model == "YIQ" or model == "yiq" then
+    return il.RGB2YIQ(img)
+  elseif model == "YUV"or model == "YUV" then
+    return il.RGB2YUV(img)
+  elseif model == "IHS"or model == "ihs" then
+    return il.RGB2IHS(img)
+  end
+  return img
+end
 
+function helpers.convert_2rgb(img, model)
+  --convert image back to RGB
+  if model == "YIQ" or model == "yiq" then
+    return il.YIQ2RGB(img)
+  elseif model == "YUV"or model == "YUV" then
+    return il.YUV2RGB(img)
+  elseif model == "IHS"or model == "ihs" then
+    return il.IHS2RGB(img)
+  end
+  return img
+end
+function helpers.use_lut( img, lut, n_chans)
+  for row, col in img:pixels() do
+    local pix = img:at( row, col )
+    for chan = 0, n_chans do
+      pix.rgb[chan] = lut[ pix.rgb[chan] ]
+    end
+  end
+  return img
+end
 
 return helpers
