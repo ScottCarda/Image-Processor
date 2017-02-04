@@ -102,18 +102,16 @@ function funcs.equalizeClip( img, perc )
   local size = img.height * img.width
   local sum
   local pix
-  perc = 1/2
+  perc = 1/100
+  local max_pixels = helpers.round( perc * size )
   
   for chan = 0, 2 do
+    local largest_bins = {}
+    local lb_size
+    local cut_pixels
     local hist = helpers.get_hist( img, chan )
-    local min = helpers.get_percent_location( hist, img.width* img.height, perc, 0)
-    local max = helpers.get_percent_location( hist, img.width* img.height, perc, 255)
-    for k = 0, min-1 do
-      hist[k] = 0
-    end
-    for k = max, 255 do
-      hist[k] = 0
-    end
+    hist, cut_pixels, largest_bins, lb_size = helpers.clip_hist( hist, max_pixels)
+    hist = helpers.distribute_cut_pixels( hist, cut_pixels, largest_bins, lb_size)
     sum = 0
     for i = 0, 255 do
       sum = sum + hist[i] / size

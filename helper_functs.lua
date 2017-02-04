@@ -83,5 +83,37 @@ function helpers.get_percent_location( hist, num_pixels, percent, start )
   return found
 end
 
+function helpers.clip_hist( hist, max_pixels)
+  local cut_pixels = 0
+  local largest_bins = {}
+  local k = 0
+  for i = 0, 255 do
+    if hist[i] >= max_pixels then
+      cut_pixels = cut_pixels + ( hist[i] - max_pixels)
+      hist[i] = max_pixels
+      largest_bins[k] = i
+      k = k + 1
+    end
+  end
+  return hist, cut_pixels, largest_bins, k
+end
+
+function helpers.distribute_cut_pixels( hist, cut_pixels, largest_bins, size)
+  local mod = cut_pixels % 256
+  local num = math.floor(cut_pixels / 256)
+  for i = 0, 255 do
+    hist[i] = hist[i] + num
+  end
+  if mod ~= 0 then
+    local k = 0
+    for i = 0, mod do
+      hist[ largest_bins[k] ] = hist[ largest_bins[k] ] + 1
+      k = (k + 1) % size
+    end
+  end
+  return hist
+end
+
+
 
 return helpers
