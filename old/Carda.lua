@@ -20,13 +20,13 @@ function funcs.grayscaleRGB( img )
       pix = img:at( row, col )
       
       gray = pix.r * 30        -- 30% red channel
-      gray = val + pix.g * 59  -- 59% green channel
-      gray = val + pix.b * 11  -- 11% blue channel
+      gray = gray + pix.g * 59  -- 59% green channel
+      gray = gray + pix.b * 11  -- 11% blue channel
       gray = math.floor( gray / 100 )
       
       -- set channels to the calculated gray value
       for chan = 0, 2 do
-        pix.rgb[chan] = val
+        pix.rgb[chan] = gray
       end
     
   end
@@ -205,9 +205,6 @@ end
   |   color channels separately.
 --]]
 function funcs.equalizeRGB( img )
-  
-  -- convert image from YIQ to RGB
-  il.YIQ2RGB( img )]]
   
   local size = img.height * img.width -- number of pixels in the image
   local sum -- number of pixels at or less than a given intensity

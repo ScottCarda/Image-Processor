@@ -1,33 +1,54 @@
-require ("ip")
-local il = require "il"
+--[[
+  |                              HelperFuncs.lua                               |
+  |                                                                            |
+  |   This file contains various miscellaneous functions that are used commonly|
+  |in the image processing functions.                                          |
+  |                                                                            |
+  |   Authors:                                                                 |
+  |     Scott Carda,                                                           |
+  |     Christopher Smith                                                      |
+  |                                                                            |
+--]]
+
+require( "ip" )
+local il = require( "il" )
+
 local helpers = {}
 
-function helpers.get_minmax_intensities( img )
-  local min = 256
-  local max = 0
-  for row = 0, img.height-1 do
-    for col = 0, img.width-1 do 
-      if min > img:at(row, col ).r then
-        min = img:at(row, col ).r
-      end
-      if max < img:at(row, col ).r then
-        max = img:at(row, col ).r
-      end
+--[[    get_minmax_intensities
+  |
+  |   Takes an image and a channel specifier. Loops through the
+  |   image finding the minimum and maximum intensities for
+  |   that channel of the image. Returns the minimum and maximum found.
+--]]
+function helpers.get_minmax_intensities( img, chan )
+  local min = 256 -- the minimum intensity found
+  local max = -1 -- the maximum intensity found
+  local pix -- a pixel
+  
+  -- loop through the image, setting min and max
+  for row, col in img:pixels() do
+    
+    pix = img:at( row, col )
+    
+    if min > pix.rgb[chan] then
+        min = pix.rgb[chan]
     end
+    if max < pix.rgb[chan] then
+      max = pix.rgb[chan]
+    end
+    
   end
+  
   return min, max
 end
 
-function helpers.count_values(img)
-  local hist = {}
-  for row = 0, img.height-1 do
-    for col = 0, img.width-1 do 
-      hist[img:at(row,col).y] = hist[img:at(row,col).y] + 1
-    end
-  end
-  return hist
-end
---Scotts in_range function
+--[[    in_range
+  |
+  |   Takes a value and return the value if it is in the range 0 to 255.
+  |   If it is not in the range, it returns the range's endpoint that is
+  |   the closest.
+--]]
 function helpers.in_range( val )  
   
   if val > 255 then
@@ -40,6 +61,11 @@ function helpers.in_range( val )
   
 end
 
+--[[    get_hist
+  |
+  |   Takes an image and a channel specifier. Creates and returns a
+  |   table representation of the histogram for that channel of the image.
+--]]
 function helpers.get_hist( img, chan )
   local pix
   local hist = {}
@@ -60,9 +86,14 @@ function helpers.get_hist( img, chan )
   return hist
 end
 
+--[[    round
+  |
+  |   Takes a value and return the value rounded to the nearest integer.
+--]]
 function helpers.round( val )
   return math.floor( val + 0.5 )
 end
+
 --get percent location given the image histogram, number of pixels in the image,  percent pixel from
 function helpers.get_percent_location( hist, num_pixels, percent, start )
   local count = 0
