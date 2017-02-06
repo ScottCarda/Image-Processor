@@ -128,7 +128,9 @@ function funcs.stretchSpecify( img, lp, rp, model, method )
   if model == "rgb" or model == "RGB" then
       n_chans = 2
   end
+  if method ~= "percent" then
     img = helpers.convert_img( img, model)
+  end
   
   local ramp = 255/(rp-lp)  
   --create look up table
