@@ -93,8 +93,15 @@ end
 function helpers.round( val )
   return math.floor( val + 0.5 )
 end
-
---get percent location given the image histogram, number of pixels in the image,  percent pixel from
+--[[    get_percent_location
+  ]
+  |   Takes in the histogram and total number of pixels in the image. It then 
+  ]   finds bin the is either greater than or equal to the percentage of pixels 
+  ]   the user is looking for. The value of start dictates starting from the bin 
+  ]   0 or bin 255 to find the location from the end that sums up to or greater 
+  ]   than the percentage of pixels looking for.
+--]]
+--
 function helpers.get_percent_location( hist, num_pixels, percent, start )
   local count = 0
   local dir = 1
@@ -113,7 +120,14 @@ function helpers.get_percent_location( hist, num_pixels, percent, start )
   end
   return found
 end
-
+--[[    clip_hist
+  |
+  |   Takes in a histogram and the maximum number of pixels per bin sets any bin 
+  ]   in the histogram greater than that number to that number. the cut pixels 
+  ]   are are kept track of and the bins cut from so the pixels can later be 
+  ]   redistributed throughout the histogram with an emphasis of placing extra 
+  ]   pixels in the largest bins cut from
+--]]
 function helpers.clip_hist( hist, max_pixels)
   local cut_pixels = 0
   local largest_bins = {}
@@ -128,7 +142,12 @@ function helpers.clip_hist( hist, max_pixels)
   end
   return hist, cut_pixels, largest_bins, k
 end
-
+--[[    distribute_cut_pixels
+  |
+  |   Takes in a histogram and the cut pixels and largest bins cut from. It
+  ]   redistributs the cut pixels throughout the histogram with an emphasis 
+  ]   of placing extra pixels in the largest bins cut from
+--]]
 function helpers.distribute_cut_pixels( hist, cut_pixels, largest_bins, size)
   local mod = cut_pixels % 256
   local num = math.floor(cut_pixels / 256)
@@ -144,7 +163,9 @@ function helpers.distribute_cut_pixels( hist, cut_pixels, largest_bins, size)
   end
   return hist
 end
-
+--[[    convert_img
+  |   Returns a converted img based on the color model a user selects
+--]]
 function helpers.convert_img( img, model)
   --convert image based on model selected
   if model == "YIQ" or model == "yiq" then
@@ -156,7 +177,9 @@ function helpers.convert_img( img, model)
   end
   return img
 end
-
+--[[    convert_img
+  |   Returns an img in RGB based on the color model a user selects
+--]]
 function helpers.convert_2rgb(img, model)
   --convert image back to RGB
   if model == "YIQ" or model == "yiq" then
@@ -168,6 +191,10 @@ function helpers.convert_2rgb(img, model)
   end
   return img
 end
+--[[    use_lut
+  |   Applies the look up table created for a specific image process to the image pixels
+  ]   n_chans is 2 or 0 meaning the user or process is modifying rgb or intensity values
+--]]
 function helpers.use_lut( img, lut, n_chans)
   for row, col in img:pixels() do
     local pix = img:at( row, col )
