@@ -83,7 +83,7 @@ function funcs.posterize( img, levels, model )
   local quanta = helpers.round(255/(levels-1))
   --compute look up table
   for i = 0, 255 do
-    lut[i] =  helpers.in_range(helpers.round((i/interval) * quanta) )
+    lut[i] =  helpers.in_range(helpers.round((i/interval)) * quanta) 
   end
   --apply look up table to image
   img = helpers.use_lut( img, lut, n_chans)
@@ -124,6 +124,12 @@ function funcs.stretchSpecify( img, lp, rp, model, method )
   if lp > rp then
     lp, rp = rp, lp
   end
+  local n_chans = 2
+  if model == nil then
+      n_chans = 2
+  elseif model ~= "rgb" or model ~= "RGB" then
+      n_chans = 0
+  end
   
   if method ~= nil then
     img = helpers.convert_img( img, model)
@@ -132,10 +138,10 @@ function funcs.stretchSpecify( img, lp, rp, model, method )
   local ramp = 255/(rp-lp)  
   --create look up table
   for i = 0, 255 do
-    lut[i] = helpers.in_range( math.floor( ( i - lp ) * ramp ) )
+    lut[i] = helpers.in_range( helpers.round( ( i - lp ) * ramp ) )
   end
   --apply look up table
-  img = helpers.use_lut( img, lut, 0)
+  img = helpers.use_lut( img, lut, n_chans)
   return helpers.convert_2rgb(img, model)
 end
 
@@ -199,7 +205,7 @@ function funcs.cont_pseudocolor( img )
   for i = 0, 255 do
     rlut[i] = helpers.in_range(  (i - 20) % 256)
     glut[i] = helpers.in_range(  (i + 47 )% 256)
-    blut[i] = helpers.in_range( -math.abs(i-128))
+    blut[i] = helpers.in_range( helpers.round(math.sqrt(i)*256) % 256)
   end
   --apply mappings of rgb channels
   return img:mapPixels(function( r, g, b )
