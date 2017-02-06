@@ -114,7 +114,7 @@ function funcs.equalizeClip( img, perc, model)
   local hist = {}
   local max_pixels = helpers.round( (perc/100) * size )
   local n_chans = 0
-  
+  local cut
   img = helpers.convert_img( img, model)
   if model == "rgb" or model == "RGB" then
     n_chans = 2
@@ -123,7 +123,8 @@ function funcs.equalizeClip( img, perc, model)
   for chan = 0, n_chans do
     hist = helpers.get_hist( img, chan )
     --clip histogram returning the bins clipped and number of clipped pixels
-    hist = helpers.clip_hist( hist, max_pixels)
+    hist, cut = helpers.clip_hist( hist, max_pixels)
+    size = size - cut
     --perform histogram equalization computing cdf and applying "transform function"
     local sum = 0
     --cdf

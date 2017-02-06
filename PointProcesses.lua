@@ -80,10 +80,10 @@ function funcs.posterize( img, levels, model )
   end
   --posterize code
   local interval = 256/levels
-  local quanta = helpers.round(255/(levels-1))
+  local quanta = math.floor(255/(levels-1))
   --compute look up table
   for i = 0, 255 do
-    lut[i] =  helpers.in_range(helpers.round((i/interval)) * quanta) 
+    lut[i] =  helpers.in_range(math.floor((i/interval)) * quanta) 
   end
   --apply look up table to image
   img = helpers.use_lut( img, lut, n_chans)
