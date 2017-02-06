@@ -13,7 +13,7 @@
 --]]
 
 require("ip")
-require("visual")
+local viz = require("visual")
 local il = require("il")
 
 local point = require( "PointProcesses" )
@@ -26,17 +26,11 @@ imageMenu("Point processes",
     {"Negate", point.negate},
     {"Posterize", point.posterize,
       {{name = "levels", type = "number", displaytype = "spin", default = 8, min = 2, max = 64}, {name = "Model", type = "string", default = "rgb"}}},
-    {"His Posterize", il.posterize,
-      {{name = "levels", type = "number", displaytype = "spin", default = 4, min = 2, max = 64},
-       {name = "color model", type = "string", default = "rgb"}}},
     {"Brighten", point.brighten, {{name = "Value", type = "number", displaytype = "slider", default = 0, min = -255, max = 255}}},
     {"Contrast", point.stretchSpecify,
       {{name = "Left endpoint", type = "number", displaytype = "spin", default = 64, min = 0, max = 255},
        {name = "Right endpoint", type = "number", displaytype = "spin", default = 192, min = 0, max = 255},
        {name = "Model", type = "string", default = "yiq"}}},
-    {"His Contrast Stretch", il.contrastStretch,
-      {{name = "min", type = "number", displaytype = "spin", default = 64, min = 0, max = 255},
-       {name = "max", type = "number", displaytype = "spin", default = 191, min = 0, max = 255}}},
     {"Gamma", point.gamma, {{name = "Gamma", type = "string", default = "1.0"}}},
     {"Log", point.logscale, {{name = "Model", type = "string", default = "rgb"}}},
     {"Cont Pseudocolor", point.cont_pseudocolor},
@@ -60,31 +54,21 @@ imageMenu("Histogram processes",
   }
 )
 
-imageMenu("His Histogram processes",
-  {
-    {"Contrast Stretch", il.stretch,
-       {{name = "color model", type = "string", default = "yiq"}}},
-    {"Contrast Specify\tCtrl-H", il.stretchSpecify, hotkey = "C-H",
-      {{name = "lp", type = "number", displaytype = "spin", default = 1, min = 0, max = 100},
-       {name = "rp", type = "number", displaytype = "spin", default = 99, min = 0, max = 100},
-       {name = "color model", type = "string", default = "yiq"}}},
-    {"Histogram Equalize", il.equalize,
-      {{name = "color model", type = "string", default = "yiq"}}},
-    {"Histogram Equalize Clip", il.equalizeClip,
-      {{name = "clip %", type = "number", displaytype = "textbox", default = "1.0"},
-       {name = "color model", type = "string", default = "yiq"}}},
-    {"Display Histogram", il.showHistogram,
-       {{name = "color model", type = "string", default = "yiq"}}},
-    {"Adaptive Equalize", il.adaptiveEqualize,
-      {{name = "width", type = "number", displaytype = "spin", default = 15, min = 3, max = 65}}},
-    {"Adaptive Contrast Stretch", il.adaptiveContrastStretch,
-      {{name = "width", type = "number", displaytype = "spin", default = 15, min = 3, max = 65}}},
-  }
-)
-
 imageMenu("Misc",
   {
     {"Binary Threshold", misc.threshold, {{name = "Threshold", type = "number", displaytype = "slider", default = 128, min = 0, max = 255}}}
+  }
+)
+
+imageMenu("Help",
+  {
+    {"Help", viz.imageMessage( "Help", "Image processing software. Select an operation from a menu to perform the associated process on the currently selected image." )},
+    {"About", viz.imageMessage( "Point Processing Assignment",
+      "Authors: Scott Carda, Christopher Smith\n"..
+      "Class: CSC442/542 Digital Image Processing\n"..
+      "Date: Spring 2017\n"..
+      "Uses the GUI framework, LuaIP, developed by Dr. Weiss and Alex Iverson"
+    )}
   }
 )
 
