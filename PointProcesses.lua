@@ -124,16 +124,11 @@ function funcs.stretchSpecify( img, lp, rp, model, method )
   if lp > rp then
     lp, rp = rp, lp
   end
-  local n_chans = 2
-  if model == nil then
+  local n_chans = 0
+  if model == "rgb" or model == "RGB" then
       n_chans = 2
-  elseif model ~= "rgb" or model ~= "RGB" then
-      n_chans = 0
   end
-  
-  if method ~= nil then
     img = helpers.convert_img( img, model)
-  end
   
   local ramp = 255/(rp-lp)  
   --create look up table
