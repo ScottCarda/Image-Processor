@@ -111,9 +111,6 @@ end
 --]]
 function funcs.equalizeClip( img, perc, model)
   local size = img.height * img.width
-  local largest_bins = {}
-  local lb_size = 0
-  local cut_pixels = 0
   local hist = {}
   local max_pixels = helpers.round( (perc/100) * size )
   local n_chans = 0
@@ -126,9 +123,7 @@ function funcs.equalizeClip( img, perc, model)
   for chan = 0, n_chans do
     hist = helpers.get_hist( img, chan )
     --clip histogram returning the bins clipped and number of clipped pixels
-    hist, cut_pixels, largest_bins, lb_size = helpers.clip_hist( hist, max_pixels)
-    --redistribute clipped pixels over histogram with leftover pixels placed in the largest bins
-    hist = helpers.distribute_cut_pixels( hist, cut_pixels, largest_bins, lb_size)
+    hist = helpers.clip_hist( hist, max_pixels)
     --perform histogram equalization computing cdf and applying "transform function"
     local sum = 0
     --cdf

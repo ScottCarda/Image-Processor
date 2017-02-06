@@ -140,7 +140,8 @@ function helpers.clip_hist( hist, max_pixels)
       k = k + 1
     end
   end
-  return hist, cut_pixels, largest_bins, k
+   --redistribute clipped pixels over histogram with leftover pixels placed in the largest bins
+  return helpers.distribute_cut_pixels(hist, cut_pixels, largest_bins, k)
 end
 --[[    distribute_cut_pixels
   |
