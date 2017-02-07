@@ -23,6 +23,7 @@ local misc = require( "MiscProcesses" )
 imageMenu("Point processes",
   {
     {"Grayscale RGB", point.grayscaleRGB},
+    {"Sepia", point.sepia},
     {"Negate", point.negate},
     {"Posterize", point.posterize,
       {{name = "levels", type = "number", displaytype = "spin", default = 8, min = 2, max = 64}, {name = "Model", type = "string", default = "rgb"}}},

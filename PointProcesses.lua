@@ -281,5 +281,17 @@ function funcs.slice( img, plane )
   
   return img
 end
+--[[    sepia
+  |
+  |   Takes a color image and converts it to shades of brown
+--]]
+function funcs.sepia(img)
+  return img:mapPixels(function( r, g, b )
+    return helpers.in_range((r * .393) + (g *.769) + (b * .189)),
+           helpers.in_range((r * .349) + (g *.686) + (b * .168)), 
+           helpers.in_range((r * .272) + (g *.534) + (b * .131))
+    end
+  )
+end
 
 return funcs
