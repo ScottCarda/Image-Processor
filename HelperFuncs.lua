@@ -130,14 +130,14 @@ end
 --]]
 function helpers.clip_hist( hist, max_pixels)
   local cut_pixels = 0
-  local largest_bins = {}
-  local k = 0
+  --local largest_bins = {}
+  --local k = 0
   for i = 0, 255 do
-    if hist[i] >= max_pixels then
+    if hist[i] > max_pixels then
       cut_pixels = cut_pixels + ( hist[i] - max_pixels)
       hist[i] = max_pixels
-      largest_bins[k] = i
-      k = k + 1
+      --largest_bins[k] = i
+      --k = k + 1
     end
   end
   return hist, cut_pixels
@@ -206,5 +206,10 @@ function helpers.use_lut( img, lut, n_chans)
   end
   return img
 end
+
+function helpers.choose(cond,a,b)
+    if cond then return a else return b end
+end
+
 
 return helpers
