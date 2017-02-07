@@ -206,7 +206,9 @@ function helpers.use_lut( img, lut, n_chans)
   end
   return img
 end
-
+--[[    choose
+  |   Simple helper function to clean up if then else statements
+--]]
 function helpers.choose(cond,a,b)
     if cond then return a else return b end
 end
