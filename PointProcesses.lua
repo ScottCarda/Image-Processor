@@ -200,9 +200,9 @@ function funcs.cont_pseudocolor( img )
   local blut = {}
   --create mappings for rgb channels
   for i = 0, 255 do
-    rlut[i] = helpers.in_range(  (i - 20) % 256)
-    glut[i] = helpers.in_range(  (i + 47 )% 256)
-    blut[i] = helpers.in_range( helpers.round(math.sqrt(i)*256) % 256)
+    rlut[i] = (-math.abs(i-64)-255) % 256
+    glut[i] = (i-128) % 256
+    blut[i] = (math.abs(i-128))
   end
   --apply mappings of rgb channels
   return img:mapPixels(function( r, g, b )
