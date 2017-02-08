@@ -5,8 +5,7 @@
   |an image.                                                                   |
   |                                                                            |
   |   Authors:                                                                 |
-  |     Scott Carda,                                                           |
-  |     Christopher Smith                                                      |
+  |     Scott Carda                                                      |
   |                                                                            |
 --]]
 
@@ -20,6 +19,9 @@ local funcs = {}
   |   Takes a color image and a threshold value. Performs a binary threshold
   |   on the image by setting all pixels whose intensity value is less than
   |   or equal to the threshold value to black and all other pixels to white.
+  |
+  |   Author:
+  |     Scott Carda
 --]]
 function funcs.threshold( img, threshold )
   local val -- the calculated value of a pixel
