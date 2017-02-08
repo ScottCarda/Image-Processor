@@ -335,27 +335,17 @@ end
   |   Author:
   |     Christopher Smith
 --]]
-function funcs.solarize(img, rthresh, gthresh, bthresh, compare)
+function funcs.solarize(img, rthresh, gthresh, bthresh)
   local pix
+
   --If user wanted to negate if less than the threshold
-  if compare == "<" then
-    for row, col in img:pixels() do
-      pix = img:at( row, col )
-      pix.r = helpers.choose( pix.r < rthresh, 255-pix.r, pix.r) 
-      pix.g = helpers.choose( pix.g < gthresh, 255-pix.g, pix.g)
-      pix.b = helpers.choose( pix.b < bthresh, 255-pix.b, pix.b)
-    end
-    return img
-  end
-  --if user wanted to negate if > then threshold or imput does not match < at all
   for row, col in img:pixels() do
     pix = img:at( row, col )
-    pix.r = helpers.choose( pix.r > rthresh, 255-pix.r, pix.r) 
-    pix.g = helpers.choose( pix.g > gthresh, 255-pix.g, pix.g)
-    pix.b = helpers.choose( pix.b > bthresh, 255-pix.b, pix.b)
+    pix.r = helpers.choose( pix.r < rthresh, 255-pix.r, pix.r) 
+    pix.g = helpers.choose( pix.g < gthresh, 255-pix.g, pix.g)
+    pix.b = helpers.choose( pix.b < bthresh, 255-pix.b, pix.b)
   end
   return img
 end
-
 
 return funcs

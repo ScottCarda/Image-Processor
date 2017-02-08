@@ -39,20 +39,14 @@ imageMenu("Point processes",
         {name = "Model", type = "string", default = "yiq"}}},
     {"Gamma", point.gamma, {{name = "Gamma", type = "string", default = "1.0"}}},
     {"Log", point.logscale, {{name = "Model", type = "string", default = "rgb"}}},
-    {"Solarize Less Than", point.solarize,
+
+    {"Solarize RGB", point.solarize,
       {
         {name = "Red", type = "number", displaytype = "slider", default = 128, min = 0, max = 255},
-        {name = "Blue", type = "number", displaytype = "slider", default = 196, min = 0, max = 255},
-        {name = "Green", type = "number", displaytype = "slider", default = 64, min = 0, max = 255}
-      }},
-    {"Solarize Greater Than", point.solarize,
-      {
-        {name = "Red", type = "number", displaytype = "slider", default = 128, min = 0, max = 255},
-        {name = "Blue", type = "number", displaytype = "slider", default = 196, min = 0, max = 255},
-        {name = "Green", type = "number", displaytype = "slider", default = 64, min = 0, max = 255}
+        {name = "Blue", type = "number", displaytype = "slider", default = 128, min = 0, max = 255},
+        {name = "Green", type = "number", displaytype = "slider", default = 128, min = 0, max = 255}
       }},
     {"Cont Pseudocolor", point.cont_pseudocolor},
-    {"His Cont Pseudocolor", il.pseudocolor1},
     {"Disc Pseudocolor", point.disc_pseudocolor},
     {"Bitplane Slice", point.slice, {{name = "Plane", type = "number", displaytype = "spin", default = 7, min = 0, max = 7}}},
   }
