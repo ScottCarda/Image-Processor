@@ -30,23 +30,23 @@ local funcs = {}
 function funcs.grayscaleRGB( img )
   local gray -- the calculated gray value of a pixel
   local pix -- a pixel
-  
+
   for row, col in img:pixels() do
-      
-      pix = img:at( row, col )
-      
-      gray = pix.r * 30        -- 30% red channel
-      gray = gray + pix.g * 59  -- 59% green channel
-      gray = gray + pix.b * 11  -- 11% blue channel
-      gray = math.floor( gray / 100 )
-      
-      -- set channels to the calculated gray value
-      for chan = 0, 2 do
-        pix.rgb[chan] = gray
-      end
-    
+
+    pix = img:at( row, col )
+
+    gray = pix.r * 30        -- 30% red channel
+    gray = gray + pix.g * 59  -- 59% green channel
+    gray = gray + pix.b * 11  -- 11% blue channel
+    gray = math.floor( gray / 100 )
+
+    -- set channels to the calculated gray value
+    for chan = 0, 2 do
+      pix.rgb[chan] = gray
+    end
+
   end
-  
+
   return img
 end
 
@@ -110,18 +110,18 @@ end
 --]]
 function funcs.brighten( img, val )
   local pix -- a pixel
-  
+
   for row, col in img:pixels() do
-      
-      pix = img:at( row, col )
-      
-      -- add the brightening value to each channel
-      for chan = 0, 2 do
-        pix.rgb[chan] = helpers.in_range( pix.rgb[chan] + val )
-      end
-    
+
+    pix = img:at( row, col )
+
+    -- add the brightening value to each channel
+    for chan = 0, 2 do
+      pix.rgb[chan] = helpers.in_range( pix.rgb[chan] + val )
+    end
+
   end
-  
+
   return img
 end
 
@@ -140,12 +140,12 @@ function funcs.stretchSpecify( img, lp, rp, model, method )
   end
   local n_chans = 0
   if model == "rgb" or model == "RGB" then
-      n_chans = 2
+    n_chans = 2
   end
   if method ~= "percent" then
     img = helpers.convert_img( img, model)
   end
-  
+
   local ramp = 255/(rp-lp)  
   --create look up table
   for i = 0, 255 do
@@ -167,18 +167,18 @@ end
 function funcs.gamma( img, gamma )
   local c = 255 -- scaling factor
   local pix -- a pixel
-  
+
   for row, col in img:pixels() do
-      
-      pix = img:at( row, col )
-      
-      -- Applies gamma to each color channel separately
-      for chan = 0, 2 do
-        pix.rgb[chan] = helpers.in_range( c * ( pix.rgb[chan] / c ) ^ gamma )
-      end
-    
+
+    pix = img:at( row, col )
+
+    -- Applies gamma to each color channel separately
+    for chan = 0, 2 do
+      pix.rgb[chan] = helpers.in_range( c * ( pix.rgb[chan] / c ) ^ gamma )
+    end
+
   end
-  
+
   return img
 end
 
@@ -198,13 +198,13 @@ function funcs.logscale( img, model )
   for i = 0, 255 do
     lut[i] = helpers.in_range(255 * math.log(1+i,256))
   end
-  
+
   if model == "rgb" or model == "RGB" then
     n_chans = 2
   end
   --apply look up table to image
   img = helpers.use_lut( img, lut, n_chans)
-  
+
   return helpers.convert_2rgb(img, model)
 end
 
@@ -229,7 +229,7 @@ function funcs.cont_pseudocolor( img )
   end
   --apply mappings of rgb channels
   return img:mapPixels(function( r, g, b )
-    return rlut[r], glut[g], blut[b]
+      return rlut[r], glut[g], blut[b]
     end
   )
 end
@@ -247,39 +247,39 @@ function funcs.disc_pseudocolor( img )
   local min = 0 -- minimum intensity
   local max = 256 -- maximum intensity
   local num_colors = 8
-  
+
   local divisor = ( max - min ) / num_colors
-  
+
   -- look up table for colors
   local color_table =
-    {
-      {000,000,000},
-      {128,000,128},
-      {000,000,255},
-      {000,255,000},
-      {255,255,000},
-      {255,128,000},
-      {255,000,000},
-      {255,255,255}
-    }
-  
+  {
+    {000,000,000},
+    {128,000,128},
+    {000,000,255},
+    {000,255,000},
+    {255,255,000},
+    {255,128,000},
+    {255,000,000},
+    {255,255,255}
+  }
+
   -- convert image from RGB to YIQ
   il.RGB2YIQ( img )
-  
+
   for row, col in img:pixels() do
-      
-      pix = img:at( row, col )
-      
-      -- calculates which color category for the pixel
-      color = math.floor( ( pix.y - min ) / divisor )
-      
-      -- sets the color for the pixel based on its color category
-      for chan = 0, 2 do
-        pix.rgb[chan] = color_table[color+1][chan+1]
-      end
-    
+
+    pix = img:at( row, col )
+
+    -- calculates which color category for the pixel
+    local color = math.floor( ( pix.y - min ) / divisor )
+
+    -- sets the color for the pixel based on its color category
+    for chan = 0, 2 do
+      pix.rgb[chan] = color_table[color+1][chan+1]
+    end
+
   end
-  
+
   return img
 end
 
@@ -294,10 +294,10 @@ end
 function funcs.slice( img, plane )
   local pix -- a pixel
   local bit -- the value of the selected bit
-  
+
   for row, col in img:pixels() do
     pix = img:at( row, col )
-    
+
     -- process each channel separately
     for chan = 0, 2 do
       -- get the bit of the selected plane
@@ -305,9 +305,9 @@ function funcs.slice( img, plane )
       -- if the bit is 0, set value to 0, if the bit is 1, set value to 255
       pix.rgb[chan] = helpers.in_range( 255 * math.floor( bit ) )
     end
-    
+
   end
-  
+
   return img
 end
 --[[    sepia
@@ -319,9 +319,9 @@ end
 --]]
 function funcs.sepia(img)
   return img:mapPixels(function( r, g, b )
-    return helpers.in_range((r * .393) + (g *.769) + (b * .189)),
-           helpers.in_range((r * .349) + (g *.686) + (b * .168)), 
-           helpers.in_range((r * .272) + (g *.534) + (b * .131))
+      return helpers.in_range((r * .393) + (g *.769) + (b * .189)),
+      helpers.in_range((r * .349) + (g *.686) + (b * .168)), 
+      helpers.in_range((r * .272) + (g *.534) + (b * .131))
     end
   )
 end
@@ -336,6 +336,7 @@ end
   |     Christopher Smith
 --]]
 function funcs.solarize(img, rthresh, gthresh, bthresh, compare)
+  local pix
   --If user wanted to negate if less than the threshold
   if compare == "<" then
     for row, col in img:pixels() do

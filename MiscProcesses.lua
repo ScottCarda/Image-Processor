@@ -26,27 +26,27 @@ local funcs = {}
 function funcs.threshold( img, threshold )
   local val -- the calculated value of a pixel
   local pix -- a pixel
-  
+
   -- convert image from RGB to YIQ
   il.RGB2YIQ( img )
-  
+
   for row, col in img:pixels() do
-      
-      pix = img:at( row, col )
-      
-      if pix.y <= threshold then
-        val = 0
-      else
-        val = 255
-      end
-      
-      -- set channels to the calculated gray value
-      for chan = 0, 2 do
-        pix.rgb[chan] = val
-      end
-    
+
+    pix = img:at( row, col )
+
+    if pix.y <= threshold then
+      val = 0
+    else
+      val = 255
+    end
+
+    -- set channels to the calculated gray value
+    for chan = 0, 2 do
+      pix.rgb[chan] = val
+    end
+
   end
-  
+
   return img
 end
 

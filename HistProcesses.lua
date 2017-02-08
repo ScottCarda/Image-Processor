@@ -27,28 +27,28 @@ local funcs = {}
   |     Scott Carda
 --]]
 function funcs.auto_stretch( img )
-  
+
   -- convert image from RGB to YIQ
   il.RGB2YIQ( img )
-  
+
   local min -- the minimum intensity in the image
   local max -- the maximum intensity in the image
   -- finds min and max
   min, max = helpers.get_minmax_intensities( img, 0 )
-  
+
   -- the slope of the linear transformation function
   local slope = 255 / ( max - min )
-  
+
   local pix -- a pixel
   -- applies the linear transformation to each pixel's intensity
   for row, col in img:pixels() do
     pix = img:at( row, col )
     pix.y = helpers.in_range( helpers.round( slope * ( pix.y - min ) ) )
   end
-  
+
   -- convert image from YIQ to RGB
   il.YIQ2RGB( img )
-  
+
   return img
 end
 
@@ -70,7 +70,7 @@ function funcs.stretchPercent( img, lp, rp, model)
   local max = helpers.get_percent_location( h, img.width * img.height, rp, 0 )
   return point.stretchSpecify(img, min, max, model, "percent")
 end
-    
+
 --[[    equalizeRGB
   |
   |   Takes a color image and performs a histogram equalization on each of the
@@ -80,35 +80,35 @@ end
   |     Scott Carda
 --]]
 function funcs.equalizeRGB( img )
-  
+
   local size = img.height * img.width -- number of pixels in the image
   local sum -- number of pixels at or less than a given intensity
   local pix -- a pixel
-  
+
   -- perform histogram equalization for each color channel separately
   for chan = 0, 2 do
     -- get the color channel's histogram
     local hist = helpers.get_hist( img, chan )
     -- look up table for what each color intensity value with map to
     local LUT = {}
-    
+
     sum = 0
     -- calculate the look up table value for each intensity
     for i = 0, 255 do
       sum = sum + hist[i] -- calculate sum for intensity i
       LUT[i] = helpers.round( 255 * sum / size )
     end
-    
+
     -- transform the appropriate channel of each pixel in the image
     for row, col in img:pixels() do
       pix = img:at( row, col )
       pix.rgb[chan] = LUT[ pix.rgb[chan] ]
     end
   end
-  
+
   return img
 end
-    
+
 --[[    equalizeClip
   |
   |   Takes a color image and performs a histogram on the channels associated with the
@@ -131,7 +131,7 @@ function funcs.equalizeClip( img, perc, model)
   if model == "rgb" or model == "RGB" then
     n_chans = 2
   end
-  
+
   for chan = 0, n_chans do
     hist = helpers.get_hist( img, chan )
     --clip histogram returning the bins clipped and number of clipped pixels
