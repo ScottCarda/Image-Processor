@@ -23,6 +23,9 @@ local funcs = {}
   |   Assigns each channel of the pixel to the calculated gray value,
   |   turning the image into a grayscale image while preserving the data
   |   structure of the image.
+  |
+  |   Author:
+  |     Scott Carda
 --]]
 function funcs.grayscaleRGB( img )
   local gray -- the calculated gray value of a pixel
@@ -51,7 +54,9 @@ end
   |
   |   Takes the image and negates each color channel separately by subtracting
   |   each pixel's intensity in that channel from the maximum possible intensity.
-  |   Based on the negate function provided by Dr. Weiss.
+  |
+  |   Author:
+  |     Dr. Weiss
 --]]
 function funcs.negate( img )
   for row = 0, img.height-1 do
@@ -69,6 +74,9 @@ end
   |   Takes the image and converts it to the specific color model and performs a
   |   Posterization ( a quantization technique that reduces 256 gray levels to a much 
   |   smaller number) The number of levels are specified by the user.
+  |
+  |   Author:
+  |     Christopher Smith
 --]]
 function funcs.posterize( img, levels, model )
   --convert image based on model selected
@@ -96,6 +104,9 @@ end
   |   Takes a color image and a brightening value. This will brighten
   |   or darken the image by the brightening value. It will darken
   |   the image if the brightening value is negative.
+  |
+  |   Author:
+  |     Scott Carda
 --]]
 function funcs.brighten( img, val )
   local pix -- a pixel
@@ -118,6 +129,9 @@ end
   |
   |   Takes a color image and performs a contrast stretch on the image.
   |   The minimum and maximum values are set by the user or percent method.
+  |
+  |   Author:
+  |     Christopher Smith
 --]]
 function funcs.stretchSpecify( img, lp, rp, model, method )
   local lut = {}
@@ -146,6 +160,9 @@ end
   |
   |   Takes a color image and a gamma value. Raises each pixel to power
   |   of the gamma value.
+  |
+  |   Author:
+  |     Scott Carda
 --]]
 function funcs.gamma( img, gamma )
   local c = 255 -- scaling factor
@@ -169,6 +186,9 @@ end
   |
   |   This function performs a logs scaling to each pixel value by compressing the dynamic range
   |   of the values and replacing the original value of the pixel with the log scaled variant.
+  |
+  |   Author:
+  |     Christopher Smith
 --]]
 function funcs.logscale( img, model )
   img = helpers.convert_img( img, model)
@@ -193,6 +213,9 @@ end
   |   This function computes a mapping for each color channel of the image and then 
   |   applies this mapping to the pixels to create a continuous psudocolor mapping 
   |   from the original image.
+  |
+  |   Author:
+  |     Christopher Smith
 --]]
 function funcs.cont_pseudocolor( img )
   local rlut = {}
@@ -200,9 +223,9 @@ function funcs.cont_pseudocolor( img )
   local blut = {}
   --create mappings for rgb channels
   for i = 0, 255 do
-    rlut[i] = (-math.abs(i-64)-255) % 256
-    glut[i] = (i-128) % 256
-    blut[i] = (math.abs(i-128))
+    rlut[i] = i
+    glut[i] = 255 - i
+    blut[i] = (-math.abs(i-64)-257) % 256
   end
   --apply mappings of rgb channels
   return img:mapPixels(function( r, g, b )
@@ -215,6 +238,9 @@ end
   |
   |   Takes a color image and assigns a color to each pixel
   |   based on the pixel's original intensity value.
+  |
+  |   Author:
+  |     Scott Carda
 --]]
 function funcs.disc_pseudocolor( img )
   local pix -- a pixel
@@ -261,6 +287,9 @@ end
   |
   |   Takes a color image and a bit plane indicator. Performs a bit
   |   plane slicing of each color channel separately.
+  |
+  |   Author:
+  |     Scott Carda
 --]]
 function funcs.slice( img, plane )
   local pix -- a pixel
@@ -283,7 +312,10 @@ function funcs.slice( img, plane )
 end
 --[[    sepia
   |
-  |   Takes a color image and converts it to shades of brown
+  |   Takes a color image and converts it to shades of brown.
+  |
+  |   Author:
+  |     Christopher Smith
 --]]
 function funcs.sepia(img)
   return img:mapPixels(function( r, g, b )
@@ -299,6 +331,9 @@ end
   |   a solarization effect that the user can choose. Similar to negation instead 
   |   a threshold is used and the pixel is negated if below or above the threshold 
   |   based on user choice.
+  |
+  |   Author:
+  |     Christopher Smith
 --]]
 function funcs.solarize(img, rthresh, gthresh, bthresh, compare)
   --If user wanted to negate if less than the threshold

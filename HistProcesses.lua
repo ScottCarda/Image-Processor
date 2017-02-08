@@ -22,6 +22,9 @@ local funcs = {}
   |
   |   Takes a color image and performs a contrast stretch on the image.
   |   The minimum and maximum values are determined automatically.
+  |
+  |   Author:
+  |     Scott Carda
 --]]
 function funcs.auto_stretch( img )
   
@@ -54,7 +57,10 @@ end
   |   Computes the histogram of the image then finds the min and max locations
   |   based on the percent the user selects for the percent number of pixels to ignore
   |   from the tail ends of the histogram. These min max values are then used to specify 
-  |   the stretchSpecify function min max as the end points for the contrast stretch
+  |   the stretchSpecify function min max as the end points for the contrast stretch.
+  |
+  |   Author:
+  |     Christopher Smith
 --]]
 function funcs.stretchPercent( img, lp, rp, model)
   img = helpers.convert_img( img, model)
@@ -69,6 +75,9 @@ end
   |
   |   Takes a color image and performs a histogram equalization on each of the
   |   color channels separately.
+  |
+  |   Author:
+  |     Scott Carda
 --]]
 function funcs.equalizeRGB( img )
   
@@ -108,6 +117,9 @@ end
   |   clipped pixels are distributed the equalization continues and calculatees the cdf 
   |   and uses that as the transformation function for the corresponding channel for all 
   |   pixels in the image.
+  |
+  |   Author:
+  |     Christopher Smith
 --]]
 function funcs.equalizeClip( img, perc, model)
   local size = img.height * img.width
