@@ -73,8 +73,8 @@ end
 
 --[[    equalizeRGB
   |
-  |   Takes a color image and performs a histogram equalization on each of the
-  |   color channels separately.
+  |   Takes a color image and performs a histogram equalization on the intensity
+  |   channel.
   |
   |   Author:
   |     Scott Carda
@@ -85,27 +85,31 @@ function funcs.equalizeRGB( img )
   local sum -- number of pixels at or less than a given intensity
   local pix -- a pixel
 
-  -- perform histogram equalization for each color channel separately
-  for chan = 0, 2 do
-    -- get the color channel's histogram
-    local hist = helpers.get_hist( img, chan )
-    -- look up table for what each color intensity value with map to
-    local LUT = {}
+  -- convert image from RGB to YIQ
+  il.RGB2YIQ( img )
+  
+  -- perform histogram equalization for the intensity channel
+  -- get the intensity histogram
+  local hist = helpers.get_hist( img, 0 )
+  -- look up table for what each color intensity value with map to
+  local LUT = {}
 
-    sum = 0
-    -- calculate the look up table value for each intensity
-    for i = 0, 255 do
-      sum = sum + hist[i] -- calculate sum for intensity i
-      LUT[i] = helpers.round( 255 * sum / size )
-    end
-
-    -- transform the appropriate channel of each pixel in the image
-    for row, col in img:pixels() do
-      pix = img:at( row, col )
-      pix.rgb[chan] = LUT[ pix.rgb[chan] ]
-    end
+  sum = 0
+  -- calculate the look up table value for each intensity
+  for i = 0, 255 do
+    sum = sum + hist[i] -- calculate sum for intensity i
+    LUT[i] = helpers.round( 255 * sum / size )
   end
 
+  -- transform the intensity of each pixel in the image
+  for row, col in img:pixels() do
+    pix = img:at( row, col )
+    pix.y = LUT[ pix.y ]
+  end
+
+  -- convert image from YIQ to RGB
+  il.YIQ2RGB( img )
+  
   return img
 end
 
