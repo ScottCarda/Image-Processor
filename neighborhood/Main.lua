@@ -38,7 +38,12 @@ imageMenu("Histogram processes",
 )
 imageMenu("Neighborhood processes",
   {
-
+    {"Smooth", neighbor.smooth_filter },
+    {"His Smooth", il.smooth },
+    {"Sharpen", neighbor.sharp_filter },
+    {"His Sharpen", il.sharpen },
+    {"Median Plus", neighbor.plus_median_filter },
+    {"His Median Plus", il.medianPlus }
   }
 )
 
