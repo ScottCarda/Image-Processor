@@ -24,7 +24,7 @@ function funcs.in_range( val )
 
 end
 
-function funcs.filter( img, chan, filter, scale, size )
+function funcs.filter( img, chan, filter, scale, size, operation )
   local n = ( size - 1 ) / 2
   local pix -- a pixel
   local total
