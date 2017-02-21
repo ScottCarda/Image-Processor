@@ -2,6 +2,8 @@ require "ip"
 local il = require "il"
 --local helpers = require "helper_functs"
 
+--[[ Only the apply_scale function, fast_smooth, fast_sharp, fast_plus_median are used! ]]
+
 local funcs = {}
 
 --[[    in_range
@@ -24,61 +26,113 @@ function funcs.in_range( val )
 
 end
 
-function sum_filter( vals, weights )
+--[[function sum_filter( vals, weights )
   local sum = 0
   for i = 1, math.min( #vals, #weights ) do
     sum = sum + vals[i] * weights[i]
   end
-  return sum
-end
-
---[[function sum_and_scale( vals, weights )
-  local sum = 0
-  local scale = 0
-  for i = 1, math.min( #vals, #weights ) do
-    sum = sum + vals[i] * weights[i]
-    scale = scale + weights[i]
-  end
-  sum = math.floor( sum / scale )
   return sum
 end]]
 
-function funcs.old_filter( img, chan, filter, operation, scale )
-  
-  if scale == nil then
-    scale = 1
+function sum_of_products( old_val, val, weight )
+  if old_val == nil then
+    old_val = 0
   end
+  return old_val + val * weight
+end
+
+function freq_list( old_val, val, weight )
+  if old_val == nil then
+    old_val = {}
+  end
+  for i = 1, weight do
+    old_val[#old_val+1] = val
+  end
+  return old_val
+end
+
+function apply_scale( filter, scale )
+  
+  for i = 1, #filter do
+    for j = 1, #filter[i] do
+      filter[i][j] = filter[i][j] * scale
+    end
+  end
+  
+end
+
+--[[ make separate func
+  local weights = {}
+  local temp
+  for i = 1, n do
+    temp = {}
+    for j = 1, m do
+      temp[#temp+1] = filter[i][j] * scale
+    end
+    weights[#weights+1] = temp
+  end]]
+
+function funcs.small_filter( img, chan, row, col, filter, operation, n, m, y_off, x_off )
+  
+  --[[local n = #filter
+  local m = #filter[1]
+  local x_off = (1-m)/2-1
+  local y_off = (1-n)/2-1]]
+  local x
+  local y
+  local result
+  
+  for i = 1, n do
+    y = (row+i+y_off)%img.height
+    for j = 1, m do
+      x = (col+j+x_off)%img.width
+      --vals[#vals+1] = img:at( y , x ).rgb[chan]
+      
+      result = operation( result, img:at( y , x ).rgb[chan], filter[i][j] )
+      
+    end
+  end
+  
+  return result
+end
+
+function funcs.apply_filter( img, chan, filter, operation, post_op )
   
   local n = #filter
   local m = #filter[1]
-  local pix -- a pixel
-  local vals
-  local weights = {}
+  
   local x
   local y
+  local x_off = (1-m)/2-1
+  local y_off = (1-n)/2-1
   
   local cpy_img = img:clone()
-  
-  for i = 1, n do
-    for j = 1, m do
-      weights[#weights+1] = filter[i][j] * scale
-    end
-  end
+  local pix -- a pixel
+  local result
   
   for row, col in img:pixels() do
     
     pix = cpy_img:at( row, col )
     
-    vals = {}
-    for i = -(n-1)/2, (n-1)/2 do
-      y = (row+i)%img.height
-      for j = -(m-1)/2, (m-1)/2 do
-        x = (col+j)%img.width
-        vals[#vals+1] = img:at( y , x ).rgb[chan]
+    result = nil
+    for i = 1, n do
+      y = (row+i+y_off)%img.height
+      for j = 1, m do
+        x = (col+j+x_off)%img.width
+        --vals[#vals+1] = img:at( y , x ).rgb[chan]
+        
+        result = operation( result, img:at( y , x ).rgb[chan], filter[i][j] )
+        
       end
     end
     
-    pix.rgb[chan] = funcs.in_range( operation( vals, weights ) )
+    if post_op ~= nil then
+      result = post_op( result )
+    end
+    
+    --pix.rgb[chan] = funcs.in_range( operation( vals, weights ) )
+    
+    pix.rgb[chan] = funcs.in_range( result )
     
   end
   
@@ -86,7 +140,7 @@ function funcs.old_filter( img, chan, filter, operation, scale )
   
 end
 
-function funcs.filter( img, chan, filter, operation, scale )
+function funcs.slow_filter( img, chan, filter, operation, scale )
   
   if scale == nil then
     scale = 1
@@ -124,8 +178,8 @@ function funcs.filter( img, chan, filter, operation, scale )
     else
       table.remove( vals, 1 )
       x = (col+(m-1)/2)%img.width
-      for i = 1, m do
-        y = i-(m-1)/2-1
+      for i = 1, n do
+        y = i-(n-1)/2-1
         y = (row+y)%img.height
         vals[n*i] = img:at( y , x ).rgb[chan]
       end
@@ -165,6 +219,153 @@ function funcs.fast_filter( img, chan, filter, scale, size )
   
 end
 
+function funcs.fast_smooth( img )
+  
+  local filter = {
+    {1,2,1},
+    {2,4,2},
+    {1,2,1}
+  }
+  
+  apply_scale( filter, 1/16 )
+  
+  local small_filter = { 1/4, 2/4, 1/4 }
+  
+  il.RGB2YIQ( img )
+  
+  local cpy_img = img:clone()
+  local pix -- a pixel
+  
+  local sum
+  local x, y
+  
+  for row, col in img:pixels() do
+    pix = cpy_img:at( row, col )
+    
+    sum = 0
+    --for i = 1, 3 do
+    --  y = (row+i-2)%img.height
+    for i = 1, 3 do
+      x = (col+i-2)%img.width
+      sum = sum + img:at( row, x ).r * small_filter[i]
+    end
+    --end
+    
+    pix.rgb[0] = funcs.in_range( sum )
+  end
+  
+  for row, col in cpy_img:pixels() do
+    pix = img:at( row, col )
+    
+    sum = 0
+    for i = 1, 3 do
+      y = (row+i-2)%img.height
+      sum = sum + cpy_img:at( y, col ).r * small_filter[i]
+    end
+    
+    pix.rgb[0] = funcs.in_range( sum )
+  end
+  
+  il.YIQ2RGB( img )
+  
+  return img
+  
+end
+
+function funcs.fast_sharp( img )
+  
+  local filter = {
+    {0,-1,0},
+    {-1,5,-1},
+    {0,-1,0}
+  }
+  
+  il.RGB2YIQ( img )
+  
+  local cpy_img = img:clone()
+  local pix -- a pixel
+  
+  local sum
+  local x, y
+  
+  for row, col in img:pixels() do
+    pix = cpy_img:at( row, col )
+    
+    sum = 0
+    for i = 1, 3 do
+      y = (row+i-2)%img.height
+      for j = 1, 3 do
+        x = (col+j-2)%img.width
+        sum = sum + img:at( y, x ).r * filter[i][j]
+      end
+    end
+    
+    pix.rgb[0] = funcs.in_range( sum )
+  end
+  
+  il.YIQ2RGB( cpy_img )
+  
+  return cpy_img
+  
+end
+
+function funcs.fast_plus_median( img )
+  
+  local filter = {
+    {0,1,0},
+    {1,1,1},
+    {0,1,0}
+  }
+  
+  il.RGB2YIQ( img )
+  
+  local cpy_img = img:clone()
+  local pix -- a pixel
+  
+  local list
+  local x, y
+  
+  for row, col in img:pixels() do
+    pix = cpy_img:at( row, col )
+    
+    list = {}
+    --[[for i = 1, 3 do
+      y = (row+i-2)%img.height
+      for j = 1, 3 do
+        x = (col+j-2)%img.width
+        for k = 1, filter[i][j] do
+          list[#list+1] = img:at( y, x ).r
+        end
+      end
+    end]]
+    
+    list = {
+      img:at( row, col ).r,
+      img:at( (row+1)%img.height, col ).r,
+      img:at( (row-1)%img.height, col ).r,
+      img:at( row, (col+1)%img.width ).r,
+      img:at( row, (col-1)%img.width ).r
+      }
+    
+    --[[for i = 1, 3 do
+      y = (row+i-2)%img.height
+      for j = 1, 3 do
+        x = (col+j-2)%img.width
+        list[#list+1] = img:at( y, x ).r
+      end
+    end]]
+    
+    table.sort( list )
+    
+    pix.r = funcs.in_range( list[3] )
+  end
+  
+  il.YIQ2RGB( cpy_img )
+  
+  return cpy_img
+  
+end
+
 function funcs.smooth_filter( img )
   
   local filter = {
@@ -173,15 +374,52 @@ function funcs.smooth_filter( img )
     {1,2,1}
   }
   
+  apply_scale( filter, 1/16 )
+  
   local filter1 = {{ 1, 2, 1 }}
   local filter2 = {{1},{2},{1}}
   
+  apply_scale( filter1, 1/4 )
+  apply_scale( filter2, 1/4 )
+  
   il.RGB2YIQ( img )
+  
+  local cpy_img = img:clone()
+  local pix -- a pixel
+  local result
+  
+  local n = #filter1
+  local m = #filter1[1]
+  local x_off = (1-m)/2-1
+  local y_off = (1-n)/2-1
+  
+  for row, col in img:pixels() do
+    pix = cpy_img:at( row, col )
+    result = funcs.small_filter( img, 0, row, col, filter1, sum_of_products, n, m, y_off, x_off )
+    pix.rgb[0] = funcs.in_range( result )
+  end
+  
+  --img = cpy_img
+  n = #filter2
+  m = #filter2[1]
+  x_off = (1-m)/2-1
+  y_off = (1-n)/2-1
+  
+  for row, col in cpy_img:pixels() do
+    pix = img:at( row, col )
+    result = funcs.small_filter( cpy_img, 0, row, col, filter2, sum_of_products, n, m, y_off, x_off )
+    pix.rgb[0] = funcs.in_range( result )
+  end
+  
+  --img = cpy_img
   
   --img = funcs.filter( img, 0, filter1, sum_filter, 1/4 )
   --img = funcs.filter( img, 0, filter2, sum_filter, 1/4 )
   
-  img = funcs.fast_filter( img, 0, filter, 1/16, 3 )
+  --img = funcs.old_filter( img, 0, filter1, sum_of_products )
+  --img = funcs.old_filter( img, 0, filter2, sum_of_products )
+  
+  --img = funcs.fast_filter( img, 0, filter, 1/16, 3 )
   
   --[[
   local n = ( size - 1 ) / 2
