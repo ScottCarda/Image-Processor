@@ -2,7 +2,7 @@ require "ip"
 local il = require "il"
 --local helpers = require "helper_functs"
 
---[[ Only the apply_scale function, fast_smooth, fast_sharp, fast_plus_median are used! ]]
+--[[ Only the in_range, apply_scale, fast_smooth, fast_sharp, fast_plus_median are used! ]]
 
 local funcs = {}
 
@@ -24,6 +24,29 @@ function funcs.in_range( val )
     return val
   end
 
+end
+
+--[[    reflection
+  |
+  |   Takes an index value and return the reflected index value to ensure
+  |   that the value lies between the given min and max values, [min, max).
+  |
+  |     Author: Scott Carda
+--]]
+function funcs.reflection( index, min, max )
+  
+  local i = index - min -- index, offset min
+  local n = max - min -- size of range
+  
+  -- If the number of reflections is odd
+  if (math.floor(i/n)%2 == 1) then
+    index = n - i%n - 1 -- reflected index
+  else
+    index = i%n -- normal, modulated index
+  end
+  
+  return index + min -- return the calculated index, offset min
+  
 end
 
 --[[function sum_filter( vals, weights )
@@ -219,15 +242,72 @@ function funcs.fast_filter( img, chan, filter, scale, size )
   
 end
 
+
+--[[  
+  --local filter = {
+  --  {1,2,1},
+  --  {2,4,2},
+  --  {1,2,1}
+  --}
+  
+  --apply_scale( filter, 1/16 )
+  
+  local small_filter = { 1/4, 2/4, 1/4 }
+  
+  il.RGB2YIQ( img )
+  
+  local cpy_img = img:clone()
+  local pix -- a pixel
+  
+  local sum
+  local x, y
+  
+  for row, col in img:pixels( 1 ) do
+    pix = cpy_img:at( row, col )
+    
+    sum = 0
+    --for i = 1, 3 do
+    --  y = (row+i-2)%img.height
+    for i = 1, 3 do
+      --x = (col+i-2)%img.width
+      --x = funcs.reflection( (col+i-2), 0, img.width-1 )
+      x = (col+i-2)
+      sum = sum + img:at( row, x ).r * small_filter[i]
+    end
+    --end
+    
+    pix.rgb[0] = funcs.in_range( sum )
+  end
+  
+  for row, col in cpy_img:pixels( 1 ) do
+    pix = img:at( row, col )
+    
+    sum = 0
+    for i = 1, 3 do
+      --y = (row+i-2)%img.height
+      --y = funcs.reflection( (row+i-2), 0, img.height-1 )
+      y = (row+i-2)
+      sum = sum + cpy_img:at( y, col ).r * small_filter[i]
+    end
+    
+    pix.rgb[0] = funcs.in_range( sum )
+  end
+  
+  il.YIQ2RGB( img )
+  
+  return img
+  
+end]]
+
 function funcs.fast_smooth( img )
   
-  local filter = {
-    {1,2,1},
-    {2,4,2},
-    {1,2,1}
-  }
+  --local filter = {
+  --  {1,2,1},
+  --  {2,4,2},
+  --  {1,2,1}
+  --}
   
-  apply_scale( filter, 1/16 )
+  --apply_scale( filter, 1/16 )
   
   local small_filter = { 1/4, 2/4, 1/4 }
   
@@ -246,7 +326,9 @@ function funcs.fast_smooth( img )
     --for i = 1, 3 do
     --  y = (row+i-2)%img.height
     for i = 1, 3 do
-      x = (col+i-2)%img.width
+      --x = (col+i-2)%img.width
+      x = funcs.reflection( (col+i-2), 0, img.width )
+      --x = col+i-2
       sum = sum + img:at( row, x ).r * small_filter[i]
     end
     --end
@@ -259,7 +341,9 @@ function funcs.fast_smooth( img )
     
     sum = 0
     for i = 1, 3 do
-      y = (row+i-2)%img.height
+      --y = (row+i-2)%img.height
+      y = funcs.reflection( (row+i-2), 0, img.height )
+      --y = row+i-2
       sum = sum + cpy_img:at( y, col ).r * small_filter[i]
     end
     
@@ -293,9 +377,11 @@ function funcs.fast_sharp( img )
     
     sum = 0
     for i = 1, 3 do
-      y = (row+i-2)%img.height
+      --y = (row+i-2)%img.height
+      y = funcs.reflection( (row+i-2), 0, img.height-1 )
       for j = 1, 3 do
-        x = (col+j-2)%img.width
+        --x = (col+j-2)%img.width
+        x = funcs.reflection( (col+j-2), 0, img.width-1 )
         sum = sum + img:at( y, x ).r * filter[i][j]
       end
     end
@@ -341,10 +427,10 @@ function funcs.fast_plus_median( img )
     
     list = {
       img:at( row, col ).r,
-      img:at( (row+1)%img.height, col ).r,
-      img:at( (row-1)%img.height, col ).r,
-      img:at( row, (col+1)%img.width ).r,
-      img:at( row, (col-1)%img.width ).r
+      img:at( funcs.reflection( (row+1), 0, img.height-1 ), col ).r,
+      img:at( funcs.reflection( (row-1), 0, img.height-1 ), col ).r,
+      img:at( row, funcs.reflection( (col+1), 0, img.width-1 ) ).r,
+      img:at( row, funcs.reflection( (col-1), 0, img.width-1 ) ).r
       }
     
     --[[for i = 1, 3 do
