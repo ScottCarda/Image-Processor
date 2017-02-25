@@ -1,6 +1,6 @@
 require "ip"
-local il = require "il"
---local helpers = require "helper_functs"
+local il = require("il")
+local helpers = require "Helper_Funcs"
 
 local funcs = {}
 
@@ -9,10 +9,6 @@ function funcs.oor_noise_cleaning_filter()
 end
 
 function funcs.median_filter()
-
-end
-
-function funcs.maximum_filter()
 
 end
 
