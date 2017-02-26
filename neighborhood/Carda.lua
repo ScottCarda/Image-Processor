@@ -183,9 +183,9 @@ local function sobel( img, row, col )
   }
   
   local x_sobel = {
-    {-1, 0, 1},
-    {-2, 0, 2},
-    {-1, 0, 1}
+    { 1, 0,-1},
+    { 2, 0,-2},
+    { 1, 0,-1}
   }
     
   for i = 1, 3 do

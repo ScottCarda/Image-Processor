@@ -53,6 +53,14 @@ function apply_scale( filter, scale )
   
 end
 
+--[[function funcs.insert_sort_pixels( list )
+  
+  result = {}
+  
+  for i = 1, #list do 
+  
+end]]
+
 -- implement counting sort
 function funcs.sort_pixels( list )
   

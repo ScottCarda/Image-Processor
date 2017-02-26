@@ -101,6 +101,55 @@ function funcs.sharp_filter( img )
   
 end
 
+--[[function funcs.plus_median_filter( img )
+  local filter = {
+    {0,1,0},
+    {1,1,1},
+    {0,1,0}
+  }
+  
+  il.RGB2YIQ( img )
+  
+  local cpy_img = img:clone()
+  local pix -- a pixel
+  
+  local list
+  local sorted_list
+  local where
+  local x, y
+  
+  for row, col in img:pixels() do
+    pix = cpy_img:at( row, col )
+    
+    list = {}
+    
+    if col == 0 then
+      list = {
+        img:at( helpers.reflection( (row-1), 0, img.height ), col ).r,
+        img:at( row, col ).r,
+        img:at( row, helpers.reflection( (col-1), 0, img.width ) ).r,
+        img:at( row, helpers.reflection( (col+1), 0, img.width ) ).r,
+        img:at( helpers.reflection( (row+1), 0, img.height ), col ).r
+      }
+      where = 1
+    else
+      list[where] = -1
+      list[where+2] = -1
+      list[where+4] = -1
+      where = where + 5
+    end
+    
+    sorted_list = helpers.sort_pixels( list )
+    
+    pix.r = helpers.in_range( sorted_list[3] )
+  end
+  
+  il.YIQ2RGB( cpy_img )
+  
+  return cpy_img
+  
+end]]
+
 function funcs.plus_median_filter( img )
   local filter = {
     {0,1,0},
@@ -114,6 +163,7 @@ function funcs.plus_median_filter( img )
   local pix -- a pixel
   
   local list
+  local sorted_list
   local x, y
   
   for row, col in img:pixels() do
@@ -154,9 +204,9 @@ function funcs.plus_median_filter( img )
       end
     end]]
     
-    table.sort( list )
+    sorted_list = helpers.sort_pixels( list )
     
-    pix.r = helpers.in_range( list[3] )
+    pix.r = helpers.in_range( sorted_list[3] )
   end
   
   il.YIQ2RGB( cpy_img )

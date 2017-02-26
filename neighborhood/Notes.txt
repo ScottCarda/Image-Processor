@@ -1,8 +1,5 @@
 Sharpen is different
   - know how to fix
-
-Sobel Direction is different
-  - Unknown
   
 Laplacian is different
   - Unknown
@@ -12,4 +9,4 @@ Need faster sort for median filters
 Need - NEED - to make neighborhood functions faster
   - possibly used sliding neighborhoods
 
-Could make reflection faster
+(Maybe) make reflection faster
