@@ -101,7 +101,114 @@ function funcs.sharp_filter( img )
   
 end
 
---[[function funcs.plus_median_filter( img )
+do
+  local hist
+  local row_start_hist
+  function sliding_plus_histogram( img, row, col )
+    
+    local x, y -- coordinates for a pixel
+    local val -- value of a particular pixel's intensity
+    
+    if row == 0 and col == 0 then
+      
+      -- initialize the histogram
+      row_start_hist = {}
+      for i = 0, 255 do
+        row_start_hist[i] = 0
+      end
+      
+      -- initial neighborhood histogram's values
+      val = img:at( helpers.reflection( (row-1), 0, img.height ), col ).r
+      row_start_hist[val] = row_start_hist[val] + 1
+      val = img:at( row, col ).r
+      row_start_hist[val] = row_start_hist[val] + 1
+      val = img:at( row, helpers.reflection( (col-1), 0, img.width ) ).r
+      row_start_hist[val] = row_start_hist[val] + 1
+      val = img:at( row, helpers.reflection( (col+1), 0, img.width ) ).r
+      row_start_hist[val] = row_start_hist[val] + 1
+      val = img:at( helpers.reflection( (row+1), 0, img.height ), col ).r
+      row_start_hist[val] = row_start_hist[val] + 1
+      
+      hist = helpers.table_copy( row_start_hist )
+      
+    elseif col == 0 then
+      
+      -- remove old left value
+      y = helpers.reflection( row-1, 0, img.height )
+      x = helpers.reflection( col-1, 0, img.width )
+      val = img:at( y, x ).r
+      row_start_hist[val] = row_start_hist[val] - 1
+      
+      -- remove old right value
+      x = helpers.reflection( col+1, 0, img.width )
+      val = img:at( y, x ).r
+      row_start_hist[val] = row_start_hist[val] - 1
+      
+      -- add new right value
+      y = helpers.reflection( row, 0, img.height )
+      val = img:at( y, x ).r
+      row_start_hist[val] = row_start_hist[val] + 1
+      
+      -- add new left value
+      x = helpers.reflection( col-1, 0, img.width )
+      val = img:at( y, x ).r
+      row_start_hist[val] = row_start_hist[val] + 1
+      
+      -- add new bottom value
+      y = helpers.reflection( row+1, 0, img.height )
+      x = helpers.reflection( col, 0, img.width )
+      val = img:at( y, x ).r
+      row_start_hist[val] = row_start_hist[val] + 1
+      
+      -- remove old top value
+      y = helpers.reflection( row-2, 0, img.height )
+      val = img:at( y, x ).r
+      row_start_hist[val] = row_start_hist[val] - 1
+      
+      hist = helpers.table_copy( row_start_hist )
+      
+    else
+      
+      -- remove old top value
+      y = helpers.reflection( row-1, 0, img.height )
+      x = helpers.reflection( col-1, 0, img.width )
+      val = img:at( y, x ).r
+      hist[val] = hist[val] - 1
+      
+      -- remove old bottom value
+      y = helpers.reflection( row+1, 0, img.height )
+      val = img:at( y, x ).r
+      hist[val] = hist[val] - 1
+      
+      -- add new bottom value
+      x = helpers.reflection( col, 0, img.width )
+      val = img:at( y, x ).r
+      hist[val] = hist[val] + 1
+      
+      -- add new top value
+      y = helpers.reflection( row-1, 0, img.height )
+      val = img:at( y, x ).r
+      hist[val] = hist[val] + 1
+      
+      -- add new right value
+      y = helpers.reflection( row, 0, img.height )
+      x = helpers.reflection( col+1, 0, img.width )
+      val = img:at( y, x ).r
+      hist[val] = hist[val] + 1
+      
+      -- remove old left value
+      x = helpers.reflection( col-2, 0, img.width )
+      val = img:at( y, x ).r
+      hist[val] = hist[val] - 1
+      
+    end
+      
+    return hist
+    
+  end
+end
+
+function funcs.plus_median_filter( img )
   local filter = {
     {0,1,0},
     {1,1,1},
@@ -113,44 +220,32 @@ end
   local cpy_img = img:clone()
   local pix -- a pixel
   
-  local list
-  local sorted_list
-  local where
-  local x, y
+  local median
+  local hist
   
   for row, col in img:pixels() do
     pix = cpy_img:at( row, col )
     
-    list = {}
+    hist = sliding_plus_histogram( img, row, col )
     
-    if col == 0 then
-      list = {
-        img:at( helpers.reflection( (row-1), 0, img.height ), col ).r,
-        img:at( row, col ).r,
-        img:at( row, helpers.reflection( (col-1), 0, img.width ) ).r,
-        img:at( row, helpers.reflection( (col+1), 0, img.width ) ).r,
-        img:at( helpers.reflection( (row+1), 0, img.height ), col ).r
-      }
-      where = 1
-    else
-      list[where] = -1
-      list[where+2] = -1
-      list[where+4] = -1
-      where = where + 5
+    median = -1
+    local sum = 0
+    
+    while sum < 3 and median < 255 do
+      median = median + 1
+      sum = sum + hist[median]
     end
     
-    sorted_list = helpers.sort_pixels( list )
-    
-    pix.r = helpers.in_range( sorted_list[3] )
+    pix.r = helpers.in_range( median )
   end
   
   il.YIQ2RGB( cpy_img )
   
   return cpy_img
   
-end]]
+end
 
-function funcs.plus_median_filter( img )
+function funcs.old_plus_median_filter( img )
   local filter = {
     {0,1,0},
     {1,1,1},

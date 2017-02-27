@@ -47,6 +47,7 @@ imageMenu("Neighborhood Processes",
     --  {{name = "Width", type = "number", displaytype = "spin", default = 3, min = 3, max = 65}}
     --},
     {"Median+", Merged.plus_median_filter},
+    {"Old Median+", Merged.old_plus_median_filter},
     {"Minimum", Merged.min_filter,
       {{name = "Width", type = "number", displaytype = "spin", default = 3, min = 3, max = 65}}
     },

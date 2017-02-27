@@ -108,12 +108,11 @@ function funcs.min_filter( img, size )
   
   local min
   local hist
-  local row_start_hist
   
   for row, col in img:pixels() do
     pix = cpy_img:at( row, col )
     
-    hist, row_start_hist = helpers.sliding_histogram( img, row, col, size, hist, row_start_hist )
+    hist = helpers.sliding_histogram( img, row, col, size )
     
     min = 0
     while hist[min] == 0 and min < 255 do
@@ -139,12 +138,11 @@ function funcs.max_filter( img, size )
   
   local max
   local hist
-  local row_start_hist
   
   for row, col in img:pixels() do
     pix = cpy_img:at( row, col )
     
-    hist, row_start_hist = helpers.sliding_histogram( img, row, col, size, hist, row_start_hist )
+    hist = helpers.sliding_histogram( img, row, col, size )
     
     max = 255
     while hist[max] == 0 and max > 0 do
@@ -170,12 +168,11 @@ function funcs.range_filter( img, size )
   
   local max, min
   local hist
-  local row_start_hist
   
   for row, col in img:pixels() do
     pix = cpy_img:at( row, col )
     
-    hist, row_start_hist = helpers.sliding_histogram( img, row, col, size, hist, row_start_hist )
+    hist = helpers.sliding_histogram( img, row, col, size )
     
     min = 0
     while hist[min] == 0 and min < 255 do

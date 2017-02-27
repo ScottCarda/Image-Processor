@@ -3,9 +3,5 @@ Sharpen is different
   
 Take color out of sobel
 Take color out of range filter
-  
-Need faster sort for median filters
-  - Histogram sort for median filters
-  - ith order selection algorithm for median
 
 (Maybe) make reflection faster
