@@ -10,25 +10,53 @@ function funcs.mean_filter( img, size )
   
   local cpy_img = img:clone()
   local pix -- a pixel
-  local x, y -- coordinates for a pixel
+  local x1, x2, y1, y2 -- coordinates for a pixel
   
   local sum
+  local row_start_sum
   
-  for row, col in img:pixels( --[[(size-1)/2]] ) do
+  for row, col in img:pixels() do
     pix = cpy_img:at( row, col )
     
-    sum = 0
-    
-    for i = 1, size do
-      y = helpers.reflection( row+i-(size-(size-1)/2), 0, img.height )
-      --y = row+i-(size-(size-1)/2)
-      for j = 1, size do
-        x = helpers.reflection( col+j-(size-(size-1)/2), 0, img.width )
-        --x = col+j-(size-(size-1)/2)
+    if row == 0 and col == 0 then
+      
+      row_start_sum = 0
+      for i = 1, size do
+        y1 = helpers.reflection( i-(size-(size-1)/2), 0, img.height )
+        for j = 1, size do
+          x1 = helpers.reflection( j-(size-(size-1)/2), 0, img.width )
+          
+          row_start_sum = row_start_sum + img:at( y1, x1 ).r
+      
+        end
+      end
+      sum = row_start_sum
+      
+    elseif col == 0 then
+      
+      y1 = helpers.reflection( row-(size-(size-1)/2), 0, img.height ) -- row to be deleted
+      y2 = helpers.reflection( row+(size-(size-1)/2)-1, 0, img.height ) -- row to be added
+      for i = 1, size do
+        x1 = helpers.reflection( col+i-(size-(size-1)/2), 0, img.width )
         
-        sum = sum + img:at( y, x ).r
+        row_start_sum = row_start_sum - img:at( y1, x1 ).r
+        row_start_sum = row_start_sum + img:at( y2, x1 ).r
         
       end
+      sum = row_start_sum
+      
+    else
+      
+      x1 = helpers.reflection( col-(size-(size-1)/2), 0, img.width ) -- col to be deleted
+      x2 = helpers.reflection( col+(size-(size-1)/2)-1, 0, img.width ) -- col to be added
+      for i = 1, size do
+        y1 = helpers.reflection( row+i-(size-(size-1)/2), 0, img.height )
+        
+        sum = sum - img:at( y1, x1 ).r
+        sum = sum + img:at( y1, x2 ).r
+        
+      end
+      
     end
     
     pix.r = helpers.in_range( math.floor( sum / (size*size) ) )
@@ -40,38 +68,59 @@ function funcs.mean_filter( img, size )
   return cpy_img
 end
 
+function funcs.other_min_filter( img, size )
+  
+  il.RGB2YIQ( img )
+  
+  local cpy_img = img:clone()
+  local pix -- a pixel
+  
+  local min
+  local hist
+  local sliding_histogram = helpers.sliding_histogram_factory( img, size )
+  
+  for row, col in img:pixels() do
+    pix = cpy_img:at( row, col )
+    
+    hist = sliding_histogram( row, col )
+    
+    min = 0
+    while hist[min] == 0 and min < 255 do
+      min = min + 1
+    end
+    
+    pix.r = min
+    
+  end
+  
+  il.YIQ2RGB( cpy_img )
+  
+  return cpy_img
+
+end
+
 function funcs.min_filter( img, size )
   
   il.RGB2YIQ( img )
   
   local cpy_img = img:clone()
   local pix -- a pixel
-  local x, y -- coordinates for a pixel
   
   local min
-  local val -- value of a particular pixel's intensity
+  local hist
+  local row_start_hist
   
-  for row, col in img:pixels( --[[(size-1)/2]] ) do
+  for row, col in img:pixels() do
     pix = cpy_img:at( row, col )
     
-    min = 256
+    hist, row_start_hist = helpers.sliding_histogram( img, row, col, size, hist, row_start_hist )
     
-    for i = 1, size do
-      y = helpers.reflection( row+i-(size-(size-1)/2), 0, img.height )
-      --y = row+i-(size-(size-1)/2)
-      for j = 1, size do
-        x = helpers.reflection( col+j-(size-(size-1)/2), 0, img.width )
-        --x = col+j-(size-(size-1)/2)
-        
-        val = img:at( y, x ).r
-        if min > val then
-          min = val
-        end
-        
-      end
+    min = 0
+    while hist[min] == 0 and min < 255 do
+      min = min + 1
     end
     
-    pix.r = helpers.in_range( min )
+    pix.r = min
     
   end
   
@@ -87,32 +136,22 @@ function funcs.max_filter( img, size )
   
   local cpy_img = img:clone()
   local pix -- a pixel
-  local x, y -- coordinates for a pixel
   
   local max
-  local val -- value of a particular pixel's intensity
+  local hist
+  local row_start_hist
   
-  for row, col in img:pixels( --[[(size-1)/2]] ) do
+  for row, col in img:pixels() do
     pix = cpy_img:at( row, col )
     
-    max = -1
+    hist, row_start_hist = helpers.sliding_histogram( img, row, col, size, hist, row_start_hist )
     
-    for i = 1, size do
-      y = helpers.reflection( row+i-(size-(size-1)/2), 0, img.height )
-      --y = row+i-(size-(size-1)/2)
-      for j = 1, size do
-        x = helpers.reflection( col+j-(size-(size-1)/2), 0, img.width )
-        --x = col+j-(size-(size-1)/2)
-        
-        val = img:at( y, x ).r
-        if max < val then
-          max = val
-        end
-        
-      end
+    max = 255
+    while hist[max] == 0 and max > 0 do
+      max = max - 1
     end
     
-    pix.r = helpers.in_range( max )
+    pix.r = max
     
   end
   
@@ -128,34 +167,24 @@ function funcs.range_filter( img, size )
   
   local cpy_img = img:clone()
   local pix -- a pixel
-  local x, y -- coordinates for a pixel
   
-  local min
-  local max
-  local val -- value of a particular pixel's intensity
+  local max, min
+  local hist
+  local row_start_hist
   
-  for row, col in img:pixels( --[[(size-1)/2]] ) do
+  for row, col in img:pixels() do
     pix = cpy_img:at( row, col )
     
-    min = 256
-    max = -1
+    hist, row_start_hist = helpers.sliding_histogram( img, row, col, size, hist, row_start_hist )
     
-    for i = 1, size do
-      y = helpers.reflection( row+i-(size-(size-1)/2), 0, img.height )
-      --y = row+i-(size-(size-1)/2)
-      for j = 1, size do
-        x = helpers.reflection( col+j-(size-(size-1)/2), 0, img.width )
-        --x = col+j-(size-(size-1)/2)
-        
-        val = img:at( y, x ).r
-        if min > val then
-          min = val
-        end
-        if max < val then
-          max = val
-        end
-        
-      end
+    min = 0
+    while hist[min] == 0 and min < 255 do
+      min = min + 1
+    end
+    
+    max = 255
+    while hist[max] == 0 and max > min do
+      max = max - 1
     end
     
     pix.r = helpers.in_range( max - min )
@@ -238,6 +267,7 @@ function funcs.sobel_dir( img )
   il.RGB2YIQ( img )
   
   local cpy_img = img:clone()
+  --local cpy_img = image.flat( img.width, img.height )
   local pix -- a pixel
   
   local part_y
@@ -261,41 +291,11 @@ end
 
 function funcs.laplacian( img, filter_type, offset )
 
-  local filter1 = {
-      { 0, 1, 0},
-      { 1,-4, 1},
-      { 0, 1, 0}
-    }
-    
-  local filter2 = {
-      { 1, 1, 1},
-      { 1,-8, 1},
-      { 1, 1, 1}
-    }
-    
-  local filter3 = {
+  local filter = {
       { 0,-1, 0},
       {-1, 4,-1},
       { 0,-1, 0}
     }
-    
-  local filter4 = {
-      {-1,-1,-1},
-      {-1, 8,-1},
-      {-1,-1,-1}
-    }
-    
-  local filter
-  
-  if filter_type == 'First' then
-    filter = filter1
-  elseif filter_type == 'Second' then
-    filter = filter2
-  elseif filter_type == 'Third' then
-    filter = filter3
-  elseif filter_type == 'Fourth' then
-    filter = filter4
-  end
   
   il.RGB2YIQ( img )
   
@@ -321,11 +321,9 @@ function funcs.laplacian( img, filter_type, offset )
       end
     end
     
-    if offset == true then
-      sum = sum + 128
-    end
+    sum = sum + 128
       
-    pix.rgb[0] = helpers.in_range( sum )
+    pix.rgb[0] = helpers.in_range( math.abs( sum ) )
   end
   
   il.YIQ2RGB( cpy_img )

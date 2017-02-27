@@ -43,7 +43,7 @@ function funcs.reflection( index, min, max )
   
 end
 
-function apply_scale( filter, scale )
+function funcs.apply_scale( filter, scale )
   
   for i = 1, #filter do
     for j = 1, #filter[i] do
@@ -51,6 +51,49 @@ function apply_scale( filter, scale )
     end
   end
   
+end
+
+--[[    get_hist
+  |
+  |   Takes an image and a channel specifier. Creates and returns a
+  |   table representation of the histogram for that channel of the image.
+  |
+  |     Authors: Scott Carda
+--]]
+function funcs.get_hist( img, chan, row, col, size )
+  local pix
+  local hist = {}
+  local x, y -- coordinates for a pixel
+
+  -- initialize the histogram
+  for i = 0, 255 do
+    hist[i] = 0
+  end
+
+  local n = (size-1)/2
+
+  for i = -n, n do
+    y = funcs.reflection( row + i, 0, img.height )
+    for j = -n, n do
+      x = funcs.reflection( col + j, 0, img.width )
+
+      pix = img:at( y, x )
+
+      hist[pix.rgb[chan]] = hist[pix.rgb[chan]] + 1
+      
+    end
+  end
+
+  return hist
+end
+
+-- shallow copy of a table
+function funcs.table_copy( table )
+  result = {}
+  for key, val in pairs(table) do
+    result[key] = val
+  end
+  return result
 end
 
 --[[function funcs.insert_sort_pixels( list )
@@ -87,6 +130,101 @@ function funcs.sort_pixels( list )
   end
   
   return result
+  
+end
+
+function funcs.sliding_histogram( img, row, col, size, hist, row_start_hist )
+  
+  local x1, x2, y1, y2 -- coordinates for a pixel
+  local val -- value of a particular pixel's intensity
+  
+  if row == 0 and col == 0 then
+      
+    row_start_hist = funcs.get_hist( img, 0, row, col, size )
+    hist = funcs.table_copy( row_start_hist )
+    
+  elseif col == 0 then
+    
+    y1 = funcs.reflection( row-(size-(size-1)/2), 0, img.height ) -- row to be deleted
+    y2 = funcs.reflection( row+(size-(size-1)/2)-1, 0, img.height ) -- row to be added
+    for i = 1, size do
+      x1 = funcs.reflection( col+i-(size-(size-1)/2), 0, img.width )
+      
+      val = img:at( y1, x1 ).r
+      row_start_hist[val] = row_start_hist[val] - 1
+      val = img:at( y2, x1 ).r
+      row_start_hist[val] = row_start_hist[val] + 1
+      
+    end
+    hist = funcs.table_copy( row_start_hist )
+    
+  else
+    
+    x1 = funcs.reflection( col-(size-(size-1)/2), 0, img.width ) -- col to be deleted
+    x2 = funcs.reflection( col+(size-(size-1)/2)-1, 0, img.width ) -- col to be added
+    for i = 1, size do
+      y1 = funcs.reflection( row+i-(size-(size-1)/2), 0, img.height )
+      
+      val = img:at( y1, x1 ).r
+      hist[val] = hist[val] - 1
+      val = img:at( y1, x2 ).r
+      hist[val] = hist[val] + 1
+      
+    end
+    
+  end
+    
+  return hist, row_start_hist
+  
+end
+
+function funcs.sliding_histogram_factory( img, size )
+  local hist
+  local row_start_hist
+  return function( row, col )
+  
+    local x1, x2, y1, y2 -- coordinates for a pixel
+    local val -- value of a particular pixel's intensity
+    
+    if row == 0 and col == 0 then
+        
+      row_start_hist = funcs.get_hist( img, 0, row, col, size )
+      hist = funcs.table_copy( row_start_hist )
+      
+    elseif col == 0 then
+      
+      y1 = funcs.reflection( row-(size-(size-1)/2), 0, img.height ) -- row to be deleted
+      y2 = funcs.reflection( row+(size-(size-1)/2)-1, 0, img.height ) -- row to be added
+      for i = 1, size do
+        x1 = funcs.reflection( col+i-(size-(size-1)/2), 0, img.width )
+        
+        val = img:at( y1, x1 ).r
+        row_start_hist[val] = row_start_hist[val] - 1
+        val = img:at( y2, x1 ).r
+        row_start_hist[val] = row_start_hist[val] + 1
+        
+      end
+      hist = funcs.table_copy( row_start_hist )
+      
+    else
+      
+      x1 = funcs.reflection( col-(size-(size-1)/2), 0, img.width ) -- col to be deleted
+      x2 = funcs.reflection( col+(size-(size-1)/2)-1, 0, img.width ) -- col to be added
+      for i = 1, size do
+        y1 = funcs.reflection( row+i-(size-(size-1)/2), 0, img.height )
+        
+        val = img:at( y1, x1 ).r
+        hist[val] = hist[val] - 1
+        val = img:at( y1, x2 ).r
+        hist[val] = hist[val] + 1
+        
+      end
+      
+    end
+    
+    return hist
+    
+  end
   
 end
 

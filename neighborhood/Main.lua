@@ -50,6 +50,9 @@ imageMenu("Neighborhood Processes",
     {"Minimum", Merged.min_filter,
       {{name = "Width", type = "number", displaytype = "spin", default = 3, min = 3, max = 65}}
     },
+    {"Other Minimum", Merged.other_min_filter,
+      {{name = "Width", type = "number", displaytype = "spin", default = 3, min = 3, max = 65}}
+    },
     {"Maximum", Merged.max_filter,
       {{name = "Width", type = "number", displaytype = "spin", default = 3, min = 3, max = 65}}
     }
