@@ -12,6 +12,7 @@ function funcs.median_filter()
 
 end
 
+-- you may have to perform a contrast stretch afterwards
 function funcs.sd_filter()
 
 end

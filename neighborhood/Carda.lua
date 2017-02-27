@@ -185,6 +185,8 @@ function funcs.range_filter( img, size )
     end
     
     pix.r = helpers.in_range( max - min )
+    pix.g = 128
+    pix.b = 128
     
   end
   
@@ -203,15 +205,15 @@ local function sobel( img, row, col )
   local x, y -- coordinates for a pixel
   
   local y_sobel = {
-    {-1,-2,-1},
+    { 1, 2, 1},
     { 0, 0, 0},
-    { 1, 2, 1}
+    {-1,-2,-1}
   }
   
   local x_sobel = {
-    { 1, 0,-1},
-    { 2, 0,-2},
-    { 1, 0,-1}
+    {-1, 0, 1},
+    {-2, 0, 2},
+    {-1, 0, 1}
   }
     
   for i = 1, 3 do
@@ -251,6 +253,8 @@ function funcs.sobel_mag( img )
     
     val = math.floor( math.sqrt( part_x*part_x + part_y*part_y ) )
     pix.r = helpers.in_range( val )
+    pix.g = 128
+    pix.b = 128
   end
   
   il.YIQ2RGB( cpy_img )
@@ -276,8 +280,14 @@ function funcs.sobel_dir( img )
     
     part_y, part_x = sobel( img, row, col )
     
-    val = math.floor( ( math.atan2( part_y, part_x ) + math.pi ) / ( 2 * math.pi ) * 256 )
+    val = math.atan2( part_y, part_x )
+    if val < 0 then
+      val = val + 2 * math.pi
+    end
+    val = math.floor( val / ( 2 * math.pi ) * 256 )
     pix.r = helpers.in_range( val )
+    pix.g = 128
+    pix.b = 128
   end
   
   il.YIQ2RGB( cpy_img )
@@ -286,7 +296,7 @@ function funcs.sobel_dir( img )
 
 end
 
-function funcs.laplacian( img, filter_type, offset )
+function funcs.laplacian( img )
 
   local filter = {
       { 0,-1, 0},

@@ -1,7 +1,10 @@
 Sharpen is different
-  - know how to fix
+  - know how to fix ( waiting on Weiss )
   
-Take color out of sobel
-Take color out of range filter
+sliding neighborhood ( NOT POSSIBLE )
+  - sobel
+  - sharpen
 
 (Maybe) make reflection faster
+
+Comment!

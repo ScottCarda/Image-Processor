@@ -2,8 +2,6 @@ require "ip"
 local il = require("il")
 local helpers = require "Helper_Funcs"
 
---[[ Only the in_range, apply_scale, fast_smooth, fast_sharp, fast_plus_median are used! ]]
-
 local funcs = {}
 
 function funcs.smooth_filter( img )
@@ -237,71 +235,6 @@ function funcs.plus_median_filter( img )
     end
     
     pix.r = helpers.in_range( median )
-  end
-  
-  il.YIQ2RGB( cpy_img )
-  
-  return cpy_img
-  
-end
-
-function funcs.old_plus_median_filter( img )
-  local filter = {
-    {0,1,0},
-    {1,1,1},
-    {0,1,0}
-  }
-  
-  il.RGB2YIQ( img )
-  
-  local cpy_img = img:clone()
-  local pix -- a pixel
-  
-  local list
-  local sorted_list
-  local x, y
-  
-  for row, col in img:pixels() do
-    pix = cpy_img:at( row, col )
-    
-    list = {}
-    --[[for i = 1, 3 do
-      y = (row+i-2)%img.height
-      for j = 1, 3 do
-        x = (col+j-2)%img.width
-        for k = 1, filter[i][j] do
-          list[#list+1] = img:at( y, x ).r
-        end
-      end
-    end]]
-    
-    list = {
-      img:at( row, col ).r,
-      img:at( helpers.reflection( (row+1), 0, img.height ), col ).r,
-      img:at( helpers.reflection( (row-1), 0, img.height ), col ).r,
-      img:at( row, helpers.reflection( (col+1), 0, img.width ) ).r,
-      img:at( row, helpers.reflection( (col-1), 0, img.width ) ).r
-    }
-    
-    --[[list = {
-      img:at( row, col ).r,
-      img:at( row+1, col ).r,
-      img:at( row-1, col ).r,
-      img:at( row, col+1 ).r,
-      img:at( row, col-1 ).r
-    }]]
-    
-    --[[for i = 1, 3 do
-      y = (row+i-2)%img.height
-      for j = 1, 3 do
-        x = (col+j-2)%img.width
-        list[#list+1] = img:at( y, x ).r
-      end
-    end]]
-    
-    sorted_list = helpers.sort_pixels( list )
-    
-    pix.r = helpers.in_range( sorted_list[3] )
   end
   
   il.YIQ2RGB( cpy_img )

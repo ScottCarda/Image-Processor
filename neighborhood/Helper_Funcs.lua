@@ -87,6 +87,33 @@ function funcs.get_hist( img, chan, row, col, size )
   return hist
 end
 
+function funcs.get_hist_filter( img, chan, row, col, size, filter )
+  local pix
+  local hist = {}
+  local x, y -- coordinates for a pixel
+
+  -- initialize the histogram
+  for i = 0, 255 do
+    hist[i] = 0
+  end
+
+  local n = (size-1)/2
+
+  for i = -n, n do
+    y = funcs.reflection( row + i, 0, img.height )
+    for j = -n, n do
+      x = funcs.reflection( col + j, 0, img.width )
+
+      pix = img:at( y, x )
+
+      hist[pix.rgb[chan]] = hist[pix.rgb[chan]] + filter[i+(size-(size-1)/2)][j+(size-(size-1)/2)]
+      
+    end
+  end
+
+  return hist
+end
+
 -- shallow copy of a table
 function funcs.table_copy( table )
   result = {}
