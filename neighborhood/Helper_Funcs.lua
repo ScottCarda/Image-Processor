@@ -43,26 +43,18 @@ function funcs.reflection( index, min, max )
   
 end
 
---[[function funcs.apply_scale( filter, scale )
-  
-  for i = 1, #filter do
-    for j = 1, #filter[i] do
-      filter[i][j] = filter[i][j] * scale
-    end
-  end
-  
-end]]
-
 --[[    get_hist
   |
-  |   Takes an image and a channel specifier. Creates and returns a
-  |   table representation of the histogram for that channel of the image.
+  |   Takes an image, a channel specifier, a position in the
+  |   image, and a neighborhood size. Calculates the histogram for the
+  |   neighborhood centered around the given image position, for the
+  |   given channel. Returns the caluclated histogram.
   |
   |     Authors: Scott Carda
 --]]
 function funcs.get_hist( img, chan, row, col, size )
-  local pix
-  local hist = {}
+  local pix -- a pixel
+  local hist = {} -- histogram
   local x, y -- coordinates for a pixel
 
   -- initialize the histogram
@@ -70,8 +62,9 @@ function funcs.get_hist( img, chan, row, col, size )
     hist[i] = 0
   end
 
-  local n = (size-1)/2
+  local n = (size-1)/2 -- offset for the indexes of the neighborhood
 
+  -- neighborhood loop
   for i = -n, n do
     y = funcs.reflection( row + i, 0, img.height )
     for j = -n, n do
@@ -79,6 +72,7 @@ function funcs.get_hist( img, chan, row, col, size )
 
       pix = img:at( y, x )
 
+      -- add the pixel to the histogram
       hist[pix.rgb[chan]] = hist[pix.rgb[chan]] + 1
       
     end
@@ -87,9 +81,16 @@ function funcs.get_hist( img, chan, row, col, size )
   return hist
 end
 
-function funcs.get_hist_filter( img, chan, row, col, size, filter )
-  local pix
-  local hist = {}
+--[[    get_hist_filter
+  |
+  |   Takes an image and a channel specifier. Creates and returns a
+  |   table representation of the histogram for that channel of the image.
+  |
+  |     Authors: Scott Carda
+--]]
+--[[function funcs.get_hist_filter( img, chan, row, col, size, filter )
+  local pix -- a pixel
+  local hist = {} -- histogram
   local x, y -- coordinates for a pixel
 
   -- initialize the histogram
@@ -97,8 +98,9 @@ function funcs.get_hist_filter( img, chan, row, col, size, filter )
     hist[i] = 0
   end
 
-  local n = (size-1)/2
+  local n = (size-1)/2 -- offset for the indexes of the neighborhood
 
+  -- neighborhood loop
   for i = -n, n do
     y = funcs.reflection( row + i, 0, img.height )
     for j = -n, n do
@@ -106,15 +108,21 @@ function funcs.get_hist_filter( img, chan, row, col, size, filter )
 
       pix = img:at( y, x )
 
-      hist[pix.rgb[chan]] = hist[pix.rgb[chan]] + filter[i+(size-(size-1)/2)][j+(size-(size-1)/2)]
+      -- ffjfjjjj wekj s vmvmalsk 
+      hist[pix.rgb[chan] ] = hist[pix.rgb[chan] ] + filter[i+(size-(size-1)/2)][j+(size-(size-1)/2)]
       
     end
   end
 
   return hist
-end
+end]]
 
--- shallow copy of a table
+--[[    table_copy
+  |
+  |   Takes a table and returns a shallow copy of the given table.
+  |
+  |     Authors: Scott Carda
+--]]
 function funcs.table_copy( table )
   result = {}
   for key, val in pairs(table) do
@@ -123,49 +131,30 @@ function funcs.table_copy( table )
   return result
 end
 
---[[implement counting sort
-function funcs.sort_pixels( list )
-  
-  local buckets = {}
-  local temp
-  local result = {}
-  
-  for i = 0, 255 do
-    buckets[i] = 0
-  end
-  
-  for i = 1, #list do
-    
-    temp = list[i]
-    
-    buckets[temp] = buckets[temp] + 1
-    
-  end
-  
-  for i = 0, 255 do
-    for j = 1, buckets[i] do
-      result[#result+1] = i
-    end
-  end
-  
-  return result
-  
-end]]
-
+--[[    sliding_histogram
+  |
+  |   Takes an image, a position in the image, and a neighborhood size. Efficiently
+  |   calculates the histogram of the neighborhood centered on the given position by
+  |   using the previously computed histogram. This function is intended to be called
+  |   in a row-major image loop.
+  |
+  |     Authors: Scott Carda
+--]]
 do
-  local hist
-  local row_start_hist
+  local hist -- the histogram
+  local row_start_hist -- the histogram at the beginning of a row
   function funcs.sliding_histogram( img, row, col, size )
     
     local x1, x2, y1, y2 -- coordinates for a pixel
     local val -- value of a particular pixel's intensity
     
+    -- if it is the first histogram of the image, make a new histogram
     if row == 0 and col == 0 then
         
       row_start_hist = funcs.get_hist( img, 0, row, col, size )
       hist = funcs.table_copy( row_start_hist )
       
-    elseif col == 0 then
+    elseif col == 0 then -- if it is the first histogram of a row, slide down from the previous row_start_hist
       
       y1 = funcs.reflection( row-(size-(size-1)/2), 0, img.height ) -- row to be deleted
       y2 = funcs.reflection( row+(size-(size-1)/2)-1, 0, img.height ) -- row to be added
@@ -173,14 +162,14 @@ do
         x1 = funcs.reflection( col+i-(size-(size-1)/2), 0, img.width )
         
         val = img:at( y1, x1 ).r
-        row_start_hist[val] = row_start_hist[val] - 1
+        row_start_hist[val] = row_start_hist[val] - 1 -- remove the pixel
         val = img:at( y2, x1 ).r
-        row_start_hist[val] = row_start_hist[val] + 1
+        row_start_hist[val] = row_start_hist[val] + 1 -- add the pixel
         
       end
       hist = funcs.table_copy( row_start_hist )
       
-    else
+    else -- else, slide right from the previous histogram
       
       x1 = funcs.reflection( col-(size-(size-1)/2), 0, img.width ) -- col to be deleted
       x2 = funcs.reflection( col+(size-(size-1)/2)-1, 0, img.width ) -- col to be added
@@ -188,9 +177,9 @@ do
         y1 = funcs.reflection( row+i-(size-(size-1)/2), 0, img.height )
         
         val = img:at( y1, x1 ).r
-        hist[val] = hist[val] - 1
+        hist[val] = hist[val] - 1 -- remove the pixel
         val = img:at( y1, x2 ).r
-        hist[val] = hist[val] + 1
+        hist[val] = hist[val] + 1 -- add the pixel
         
       end
       

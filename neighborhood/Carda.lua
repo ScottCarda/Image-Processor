@@ -196,37 +196,46 @@ function funcs.range_filter( img, size )
 
 end
 
-
-local function sobel( img, row, col )
+--[[    part_deriv
+  |
+  |   Takes an image and a position in the image. Approximates the partial
+  |   derivatives for x and y directions. Performs a preprocessing smooth operation.
+  |
+  |     Author: Scott Carda
+--]]
+local function part_deriv( img, row, col )
   
-  local part_y = 0
-  local part_x = 0
-  local val
+  local part_y = 0 -- the partial derivative for y
+  local part_x = 0 -- the partial derivative for x
+  local val -- value of a particular pixel's intensity
   local x, y -- coordinates for a pixel
   
-  local y_sobel = {
+  -- the y direciton difference filter, with smoothing 
+  local y_diff = {
     { 1, 2, 1},
     { 0, 0, 0},
     {-1,-2,-1}
   }
   
-  local x_sobel = {
+  -- the x direciton difference filter, with smoothing 
+  local x_diff = {
     {-1, 0, 1},
     {-2, 0, 2},
     {-1, 0, 1}
   }
-    
+  
+  -- neighborhood loop
   for i = 1, 3 do
     y = helpers.reflection( row+i-2, 0, img.height )
-    --y = row+i-2
     for j = 1, 3 do
+      -- skip central element of the filters
       if i ~= 2 or j ~= 2 then
         x = helpers.reflection( col+j-2, 0, img.width )
-        --x = col+j-2
         
+        -- calculate part_x, part_y
         val = img:at( y, x ).r
-        part_y = part_y + val * y_sobel[i][j]
-        part_x = part_x + val * x_sobel[i][j]
+        part_y = part_y + val * y_diff[i][j]
+        part_x = part_x + val * x_diff[i][j]
         
       end
     end
@@ -235,28 +244,42 @@ local function sobel( img, row, col )
   return part_y, part_x
 end
 
+--[[    sobel_mag
+  |
+  |   Takes an image and calculates the smoothed sobel magnitude.
+  |   This is an edge detection operation that uses the x and y
+  |   partial derivatives to find local extrema, which represent edges.
+  |
+  |     Author: Scott Carda
+--]]
 function funcs.sobel_mag( img )
 
+  -- convert image from RGB to YIQ
   il.RGB2YIQ( img )
   
-  local cpy_img = img:clone()
+  local cpy_img = img:clone() -- copy of image
   local pix -- a pixel
   
-  local part_y
-  local part_x
-  local val
+  local part_y -- the partial derivative for y
+  local part_x -- the partial derivative for x
+  local val -- unclipped calculated value of pixel sobel magnitude
   
   for row, col in img:pixels() do
     pix = cpy_img:at( row, col )
     
-    part_y, part_x = sobel( img, row, col )
+    -- get the sobel partial x and partial y
+    part_y, part_x = part_deriv( img, row, col )
     
+    -- calculate the magnitude
     val = math.floor( math.sqrt( part_x*part_x + part_y*part_y ) )
     pix.r = helpers.in_range( val )
+    
+    -- remove the color
     pix.g = 128
     pix.b = 128
   end
   
+  -- convert image from YIQ to RGB
   il.YIQ2RGB( cpy_img )
   
   return cpy_img
@@ -278,7 +301,7 @@ function funcs.sobel_dir( img )
   for row, col in img:pixels() do
     pix = cpy_img:at( row, col )
     
-    part_y, part_x = sobel( img, row, col )
+    part_y, part_x = part_deriv( img, row, col )
     
     val = math.atan2( part_y, part_x )
     if val < 0 then
@@ -316,12 +339,11 @@ function funcs.laplacian( img )
     pix = cpy_img:at( row, col )
     
     sum = 0
+    -- neighborhood loop
     for i = 1, 3 do
       y = helpers.reflection( (row+i-2), 0, img.height )
-      --y = row+i-2
       for j = 1, 3 do
         x = helpers.reflection( (col+j-2), 0, img.width )
-        --x = col+j-2
         
         sum = sum + img:at( y, x ).r * filter[i][j]
         
