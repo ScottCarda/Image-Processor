@@ -190,7 +190,7 @@ do
   end
 end
 
-function funcs.sliding_histogram_factory( img, size )
+--[[function funcs.sliding_histogram_factory( img, size )
   local hist
   local row_start_hist
   return function( row, col )
@@ -238,6 +238,6 @@ function funcs.sliding_histogram_factory( img, size )
     
   end
   
-end
+end]]
 
 return funcs
