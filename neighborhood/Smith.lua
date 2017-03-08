@@ -119,20 +119,28 @@ function funcs.kirsch( img )
     local pix
     local x, y
     local sum
+    
     for row, col in img:pixels() do
         pix = cpy_img:at( row, col )
-        sum = 0
-        for rotation = 0, 7 do
-            kirsch_mask = helpers.rotate_kirsch( i )
+        
+        local max = 0
+        for rot = 0, 7 do
+            sum = 0
+            kirsch_mask = helpers.rotate_kirsch( rot )
             for i = 1, 3 do
                 y = helpers.reflection( (row+i-2), 0, img.height)
                 for j = 1, 3 do
-                    x = helpers.reflection( ( col+j-2), 0, img.width )
-                    sum = sum + img:at( y, x).r * kirsch_mask[i][j]
+                    x = helpers.reflection( (col+j-2), 0, img.width )
+                    sum = sum + img:at( y, x ).r * kirsch_mask[i][j]
                 end
             end
+            sum = math.abs( sum )
+            if sum > max then
+              max = sum
+            end
         end--end rotation
-        pix.r = helpers.in_range( math.abs( sum/8 ) )
+        
+        pix.r = helpers.in_range( max/3 )
         pix.g = 128
         pix.b = 128
     end
