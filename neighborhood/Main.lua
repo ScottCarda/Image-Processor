@@ -168,6 +168,7 @@ imageMenu("Edge Detection",
     {"Sobel Edge Magnitude", Merged.sobel_mag},
     {"Sobel Edge Direction", Merged.sobel_dir},
     {"Laplacian", Merged.laplacian},
+    {"Kirsch Edge", Merged.kirsch},
     --[[{"Laplacian", Merged.laplacian,
       {
         {name='Filter Number',type='string',displaytype='combo',choices={'First', 'Second', 'Third', 'Fourth'}, default='First'},
