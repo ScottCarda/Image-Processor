@@ -134,8 +134,8 @@ imageMenu("Neighborhood Processes",
     },
     {"Maximum", Merged.max_filter,
       {{name = "Width", type = "number", displaytype = "spin", default = 3, min = 3, max = 65}}
-    }
-    --{"Emboss", il.emboss},
+    },
+    {"Emboss", Merged.emboss}
     
   }
 )

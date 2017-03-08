@@ -149,7 +149,19 @@ function funcs.kirsch( img )
 end
 
 function funcs.emboss( img)
-
+  il.RGB2YIQ( img )
+    
+  local cpy_img = img:clone()
+  local pix, neg_pix, pos_pix
+  local x, y
+  for row, col in img:pixels() do
+    pix = cpy_img:at( row, col )
+    pos_pix = img:at(  helpers.reflection( row-1,0,img.height) , helpers.reflection(col - 1,0,img.width))
+    neg_pix = img:at( helpers.reflection( row+1,0,img.height) , helpers.reflection(col + 1,0,img.width))
+    pix.r = helpers.in_range(128 + pos_pix.r - neg_pix.r)
+  end
+  il.YIQ2RGB(cpy_img)
+  return cpy_img
 end
 
 return funcs
