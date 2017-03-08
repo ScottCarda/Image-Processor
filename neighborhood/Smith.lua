@@ -110,6 +110,36 @@ function funcs.kirsch_dir( img )
 
 end
 
+function funcs.kirsch( img )
+    local kirsch_mask
+    
+    il.RGB2YIQ( img )
+    
+    local cpy_img = img:clone()
+    local pix
+    local x, y
+    local sum
+    for row, col in img:pixels() do
+        pix = cpy_img:at( row, col )
+        sum = 0
+        for rotation = 0, 7 do
+            kirsch_mask = helpers.rotate_kirsch( i )
+            for i = 1, 3 do
+                y = helpers.reflection( (row+i-2), 0, img.height)
+                for j = 1, 3 do
+                    x = helpers.reflection( ( col+j-2), 0, img.width )
+                    sum = sum + img:at( y, x).r * kirsch_mask[i][j]
+                end
+            end
+        end--end rotation
+        pix.r = helpers.in_range( math.abs( sum/8 ) )
+        pix.g = 128
+        pix.b = 128
+    end
+    il.YIQ2RGB(cpy_img)
+    return cpy_img
+end
+
 function funcs.emboss( img)
 
 end
