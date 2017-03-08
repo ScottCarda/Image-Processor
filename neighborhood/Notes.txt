@@ -1,6 +1,3 @@
-Sharpen is different
-  - know how to fix ( waiting on Weiss )
-  
 sliding neighborhood ( NOT POSSIBLE )
   - sobel
   - sharpen
