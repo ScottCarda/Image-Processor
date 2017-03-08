@@ -119,7 +119,12 @@ imageMenu("Neighborhood Processes",
     {"Mean", Merged.mean_filter,
       {{name = "Width", type = "number", displaytype = "spin", default = 3, min = 3, max = 65}}
     },
-    
+    {"Median", Merged.median_filter,
+        {{name = "Width", type = "number", displaytype = "spin", default = 3, min = 3, max = 65}}
+    },
+    {"Noise Cleaning", Merged.oor_noise_cleaning_filter,
+        {{name = "Threshold", type = "number", displaytype = "slider", default = 128, min = 0, max = 255}}
+    },
     --{"Median", il.timed(il.median)
     --  {{name = "Width", type = "number", displaytype = "spin", default = 3, min = 3, max = 65}}
     --},
@@ -177,6 +182,12 @@ imageMenu("Edge Detection",
     --{"Std Dev", il.stdDev,
     --  {{name = "Width", type = "number", displaytype = "spin", default = 3, min = 0, max = 65}}
     --}
+    {"Variance", Merged.var_filter,
+        {{name = "Width", type = "number", displaytype = "spin", default = 3, min = 0, max = 65}}
+    },
+    {"Std Dev", Merged.sd_filter,
+        {{name = "Width", type = "number", displaytype = "spin", default = 3, min = 0, max = 65}}
+    },
     
   }
 )
