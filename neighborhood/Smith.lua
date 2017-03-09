@@ -14,29 +14,30 @@ local funcs = {}
 --]]
 
 function funcs.oor_noise_cleaning_filter( img, thresh)
-    il.RGB2YIQ( img )
-    local cpy_img = img:clone()
-    local pix
-    local sum
-    local size = 3
-    local hist
-    for row, col in img:pixels() do
-        pix = cpy_img:at(row, col )
-        hist = helpers.sliding_histogram(img, row, col, size)
-        sum = 0
-        --calculate sume of the neighboring pixels
-        for i = 0, 255 do
-            sum = sum + i * hist[i]
-        end
-        --set sum equal to 1/8 * sum. Removing the center pixel from sum
-        sum = 1/8*(sum - pix.r)
-        --If pixel minus sum is greater then user threshold set pixel equal to sum
-        if math.abs( pix.r - sum ) >= thresh then
-            pix.r = sum
-        end
+  il.RGB2YIQ( img )
+  local cpy_img = img:clone()
+  local pix
+  local sum
+  local size = 3
+  local hist
+  local abs = math.abs
+  for row, col in img:pixels() do
+    pix = cpy_img:at(row, col )
+    hist = helpers.sliding_histogram(img, row, col, size)
+    sum = 0
+    --calculate sume of the neighboring pixels
+    for i = 0, 255 do
+      sum = sum + i * hist[i]
     end
-    il.YIQ2RGB( cpy_img )
-    return cpy_img
+    --set sum equal to 1/8 * sum. Removing the center pixel from sum
+    sum = 1/8*(sum - pix.r)
+    --If pixel minus sum is greater then user threshold set pixel equal to sum
+    if abs( pix.r - sum ) >= thresh then
+      pix.r = sum
+    end
+  end
+  il.YIQ2RGB( cpy_img )
+  return cpy_img
 end
 --[[    median_filter
   |
@@ -48,29 +49,30 @@ end
   |     Author: Chris Smith
 --]]
 function funcs.median_filter( img, size )
-    il.RGB2YIQ( img )
-    local cpy_img = img:clone()
-    local pix
-    
-    local hist
-    local count
-    local i
+  il.RGB2YIQ( img )
+  local cpy_img = img:clone()
+  local pix
 
-    for row, col in img:pixels() do
-        pix = cpy_img:at(row, col)
-        hist = helpers.sliding_histogram(img, row, col, size)
-        i = -1
-        count = 0
-        --find the middle value of the neighborhood and set pixel to it
-        while count < math.ceil( size * size / 2 ) do
-            i = i + 1
-            count = count + hist[i]
-        end
-        pix.r = i
+  local hist
+  local count
+  local i
+  local ceil = math.ceil
+
+  for row, col in img:pixels() do
+    pix = cpy_img:at(row, col)
+    hist = helpers.sliding_histogram(img, row, col, size)
+    i = -1
+    count = 0
+    --find the middle value of the neighborhood and set pixel to it
+    while count < ceil( size * size / 2 ) do
+      i = i + 1
+      count = count + hist[i]
     end
-    il.YIQ2RGB( cpy_img)
+    pix.r = i
+  end
+  il.YIQ2RGB( cpy_img)
 
-    return cpy_img
+  return cpy_img
 
 end
 
@@ -84,29 +86,30 @@ end
   |     Author: Chris Smith
 --]]
 function funcs.sd_filter( img, size)
-    il.RGB2YIQ( img )
-    local cpy_img = img:clone()
-    local pix
+  il.RGB2YIQ( img )
+  local cpy_img = img:clone()
+  local pix
 
-    local hist
-    local sum
-    local sq_sum
-    local n = size * size
-    for row, col in img:pixels() do
-        pix = cpy_img:at( row, col)
-        hist = helpers.sliding_histogram( img, row, col, size )
-        sum = 0
-        sq_sum = 0
-        --calculate the sum and the sum of the squares of neighborhood
-        for i = 0, 255 do
-            sum = sum + ( i * hist[i] )
-            sq_sum = sq_sum + ( ( i * i ) * hist[i] )
-        end
-        --set pixel to the standard deviation of the neighborhood
-        pix.r = math.sqrt( ( sq_sum - ( sum*sum ) /n) / n)
+  local hist
+  local sum
+  local sq_sum
+  local n = size * size
+  local sqrt = math.sqrt
+  for row, col in img:pixels() do
+    pix = cpy_img:at( row, col)
+    hist = helpers.sliding_histogram( img, row, col, size )
+    sum = 0
+    sq_sum = 0
+    --calculate the sum and the sum of the squares of neighborhood
+    for i = 0, 255 do
+      sum = sum + ( i * hist[i] )
+      sq_sum = sq_sum + ( ( i * i ) * hist[i] )
     end
-    il.YIQ2RGB (cpy_img)
-    return cpy_img
+    --set pixel to the standard deviation of the neighborhood
+    pix.r = sqrt( ( sq_sum - ( sum*sum ) /n) / n)
+  end
+  il.YIQ2RGB (cpy_img)
+  return cpy_img
 end
 --[[    var_filter
   |
@@ -118,28 +121,28 @@ end
   |     Author: Chris Smith
 --]]
 function funcs.var_filter( img, size )
-    il.RGB2YIQ( img )
-    local cpy_img = img:clone()
-    local pix
-    local hist
-    local sum
-    local sq_sum
-    local n = size * size
-    for row, col in img:pixels() do
-        pix = cpy_img:at( row, col )
-        hist = helpers.sliding_histogram( img, row, col, size )
-        sum = 0
-        sq_sum = 0
-        --calculate the sum and the sum of the squares of neighborhood
-        for i = 0, 255 do
-            sum = sum + ( i * hist[i] )
-            sq_sum = sq_sum + ( ( i * i ) * hist[i] )
-        end
-        --set the pixel to the variance of the neighborhood
-        pix.r = helpers.in_range((sq_sum - (sum*sum) / n ) /n)
+  il.RGB2YIQ( img )
+  local cpy_img = img:clone()
+  local pix
+  local hist
+  local sum
+  local sq_sum
+  local n = size * size
+  for row, col in img:pixels() do
+    pix = cpy_img:at( row, col )
+    hist = helpers.sliding_histogram( img, row, col, size )
+    sum = 0
+    sq_sum = 0
+    --calculate the sum and the sum of the squares of neighborhood
+    for i = 0, 255 do
+      sum = sum + ( i * hist[i] )
+      sq_sum = sq_sum + ( ( i * i ) * hist[i] )
     end
-    il.YIQ2RGB ( cpy_img)
-    return cpy_img
+    --set the pixel to the variance of the neighborhood
+    pix.r = helpers.in_range((sq_sum - (sum*sum) / n ) /n)
+  end
+  il.YIQ2RGB ( cpy_img)
+  return cpy_img
 end
 --[[    kirsch_mag
   |
@@ -151,42 +154,42 @@ end
   |     Author: Chris Smith
 --]]
 function funcs.kirsch_mag( img )
-local kirsch_mask
-    
-    il.RGB2YIQ( img )
-    
-    local cpy_img = img:clone()
-    local pix
-    local x, y
-    local sum
-    
-    for row, col in img:pixels() do
-        pix = cpy_img:at( row, col )
-        
-        local mag = 0
-        for rot = 0, 7 do
-            sum = 0
-            --get kirsch mask and sum up values using reflection on image borders
-            kirsch_mask = helpers.rotate_kirsch( rot )
-            for i = 1, 3 do
-                y = helpers.reflection( (row+i-2), 0, img.height)
-                for j = 1, 3 do
-                    x = helpers.reflection( (col+j-2), 0, img.width )
-                    sum = sum + img:at( y, x ).r * kirsch_mask[i][j]
-                end
-            end
-            --sum = math.abs( sum )
-            if sum > mag then
-              mag = sum -- store the magnitude
-            end
-        end--end rotation
-        
-        pix.r = helpers.in_range( mag/3 )
-        pix.g = 128
-        pix.b = 128
-    end
-    il.YIQ2RGB(cpy_img)
-    return cpy_img
+  local kirsch_mask
+
+  il.RGB2YIQ( img )
+
+  local cpy_img = img:clone()
+  local pix
+  local x, y
+  local sum
+
+  for row, col in img:pixels() do
+    pix = cpy_img:at( row, col )
+
+    local mag = 0
+    for rot = 0, 7 do
+      sum = 0
+      --get kirsch mask and sum up values using reflection on image borders
+      kirsch_mask = helpers.rotate_kirsch( rot )
+      for i = 1, 3 do
+        y = helpers.reflection( (row+i-2), 0, img.height)
+        for j = 1, 3 do
+          x = helpers.reflection( (col+j-2), 0, img.width )
+          sum = sum + img:at( y, x ).r * kirsch_mask[i][j]
+        end
+      end
+      --sum = math.abs( sum )
+      if sum > mag then
+        mag = sum -- store the magnitude
+      end
+    end--end rotation
+
+    pix.r = helpers.in_range( mag/3 )
+    pix.g = 128
+    pix.b = 128
+  end
+  il.YIQ2RGB(cpy_img)
+  return cpy_img
 end
 --[[    kirsch_dir
   |
@@ -198,45 +201,45 @@ end
   |     Author: Chris Smith
 --]]
 function funcs.kirsch_dir( img )
-    local kirsch_mask
-    
-    il.RGB2YIQ( img )
-    
-    local cpy_img = img:clone()
-    local pix
-    local x, y
-    local sum
-    
-    for row, col in img:pixels() do
-        pix = cpy_img:at( row, col )
-        
-        local mag = 0
-        local max = 0
-        --loop over all 8 directions of kirsch mask
-        for rot = 0, 7 do
-            sum = 0
-            --get kirsch mask and sum up values using reflection on image borders
-            kirsch_mask = helpers.rotate_kirsch( rot )
-            for i = 1, 3 do
-                y = helpers.reflection( (row+i-2), 0, img.height)
-                for j = 1, 3 do
-                    x = helpers.reflection( (col+j-2), 0, img.width )
-                    sum = sum + img:at( y, x ).r * kirsch_mask[i][j]
-                end
-            end
-            --sum = math.abs( sum )
-            if sum > mag then
-              mag = sum -- store the magnitude
-              max = rot -- store the rotation that gives largest magnitude
-            end
-        end--end rotation
-        max = math.floor((max / 8) * 256)
-        pix.r = helpers.in_range( max )
-        pix.g = 128
-        pix.b = 128
-    end
-    il.YIQ2RGB(cpy_img)
-    return cpy_img
+  local kirsch_mask
+
+  il.RGB2YIQ( img )
+
+  local cpy_img = img:clone()
+  local pix
+  local x, y
+  local sum
+
+  for row, col in img:pixels() do
+    pix = cpy_img:at( row, col )
+
+    local mag = 0
+    local max = 0
+    --loop over all 8 directions of kirsch mask
+    for rot = 0, 7 do
+      sum = 0
+      --get kirsch mask and sum up values using reflection on image borders
+      kirsch_mask = helpers.rotate_kirsch( rot )
+      for i = 1, 3 do
+        y = helpers.reflection( (row+i-2), 0, img.height)
+        for j = 1, 3 do
+          x = helpers.reflection( (col+j-2), 0, img.width )
+          sum = sum + img:at( y, x ).r * kirsch_mask[i][j]
+        end
+      end
+      --sum = math.abs( sum )
+      if sum > mag then
+        mag = sum -- store the magnitude
+        max = rot -- store the rotation that gives largest magnitude
+      end
+    end--end rotation
+    max = math.floor((max / 8) * 256)
+    pix.r = helpers.in_range( max )
+    pix.g = 128
+    pix.b = 128
+  end
+  il.YIQ2RGB(cpy_img)
+  return cpy_img
 
 end
 --[[    Kirsch
@@ -247,52 +250,52 @@ end
   |     Author: Chris Smith
 --]]
 function funcs.kirsch( img )
-    local kirsch_mask
-    
-    il.RGB2YIQ( img )
-    
-    local mag_img = img:clone()
-    local dir_img = img:clone()
-    local pix
-    local x, y
-    local sum
-    
-    for row, col in img:pixels() do
-        dir_pix = dir_img:at( row, col )
-        mag_pix = mag_img:at( row, col )
-        
-        local max = 0
-        local mag = 0
-        for rot = 0, 7 do
-            sum = 0
-            --get kirsch mask and sum up values using reflection on image borders
-            kirsch_mask = helpers.rotate_kirsch( rot )
-            for i = 1, 3 do
-                y = helpers.reflection( (row+i-2), 0, img.height)
-                for j = 1, 3 do
-                    x = helpers.reflection( (col+j-2), 0, img.width )
-                    sum = sum + img:at( y, x ).r * kirsch_mask[i][j]
-                end
-            end-- end filter
-            
-            if sum > mag then
-              mag = sum -- store the maximum magnitude
-              max = rot -- store the direction that gives largest magnitude
-            end
-        end--end rotation
-        
-        mag_pix.r = helpers.in_range( mag/3 )
-        mag_pix.g = 128
-        mag_pix.b = 128
-        
-        dir_pix.r = helpers.in_range( math.floor(max/8*256) )
-        dir_pix.g = 128
-        dir_pix.b = 128
-    end
-    il.YIQ2RGB(img)
-    il.YIQ2RGB(mag_img)
-    il.YIQ2RGB(dir_img)
-    return img, mag_img, dir_img
+  local kirsch_mask
+  local cpy_img = img:clone()
+  il.RGB2YIQ( img )
+
+  local mag_img = img:clone()
+  local dir_img = img:clone()
+  local dir_pix, mag_pix
+  local x, y
+  local sum
+  local max, mag
+
+  for row, col in img:pixels() do
+    dir_pix = dir_img:at( row, col )
+    mag_pix = mag_img:at( row, col )
+
+    max = 0
+    mag = 0
+    for rot = 0, 7 do
+      sum = 0
+      --get kirsch mask and sum up values using reflection on image borders
+      kirsch_mask = helpers.rotate_kirsch( rot )
+      for i = 1, 3 do
+        y = helpers.reflection( (row+i-2), 0, img.height)
+        for j = 1, 3 do
+          x = helpers.reflection( (col+j-2), 0, img.width )
+          sum = sum + img:at( y, x ).r * kirsch_mask[i][j]
+        end
+      end-- end filter
+
+      if sum > mag then
+        mag = sum -- store the maximum magnitude
+        max = rot -- store the direction that gives largest magnitude
+      end
+    end--end rotation
+
+    mag_pix.r = helpers.in_range( mag/3 )
+    mag_pix.g = 128
+    mag_pix.b = 128
+
+    dir_pix.r = helpers.in_range( math.floor(max/8*256) )
+    dir_pix.g = 128
+    dir_pix.b = 128
+  end
+  il.YIQ2RGB(mag_img)
+  il.YIQ2RGB(dir_img)
+  return cpy_img, mag_img, dir_img
 end
 --[[    emboss
   |
@@ -309,7 +312,7 @@ end
 --]]
 function funcs.emboss( img)
   il.RGB2YIQ( img )
-    
+
   local cpy_img = img:clone()
   local pix, neg_pix, pos_pix
   local x, y
