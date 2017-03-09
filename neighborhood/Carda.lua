@@ -22,7 +22,7 @@ function funcs.mean_filter( img, size )
   
   local cpy_img = img:clone() -- copy of image
   local pix -- a pixel
-  local x1, x2, y1, y2 -- coordinates for a pixel
+  local x1, x2, y1, y2 -- pixel coordinates
   
   local sum -- the summation of the intensities of the pixels in a neighborhood
   local row_start_sum -- the sum at the start of a row
@@ -83,37 +83,6 @@ function funcs.mean_filter( img, size )
   
   return cpy_img
 end
-
---[[function funcs.other_min_filter( img, size )
-  
-  il.RGB2YIQ( img )
-  
-  local cpy_img = img:clone()
-  local pix -- a pixel
-  
-  local min
-  local hist
-  local sliding_histogram = helpers.sliding_histogram_factory( img, size )
-  
-  for row, col in img:pixels() do
-    pix = cpy_img:at( row, col )
-    
-    hist = sliding_histogram( row, col )
-    
-    min = 0
-    while hist[min] == 0 and min < 255 do
-      min = min + 1
-    end
-    
-    pix.r = min
-    
-  end
-  
-  il.YIQ2RGB( cpy_img )
-  
-  return cpy_img
-
-end]]
 
 --[[    min_filter
   |
@@ -318,73 +287,41 @@ local function part_deriv( img, row, col )
   return part_y, part_x
 end
 
---[[    sobel_mag
+--[[    sobel
   |
-  |   Takes an image and calculates the smoothed sobel magnitude.
+  |   Takes an image and calculates the smoothed sobel magnitude and direction.
   |   This is an edge detection operation that uses the x and y
   |   partial derivatives to find local extrema, which represent edges.
   |
   |     Author: Scott Carda
 --]]
-function funcs.sobel_mag( img )
+function funcs.sobel( img )
+
+  -- make a copy of the image to return
+  local cpy_img = img:clone()
 
   -- convert image from RGB to YIQ
   il.RGB2YIQ( img )
   
-  local cpy_img = img:clone() -- copy of image
-  local pix -- a pixel
+  local dir_img = img:clone() -- sobel direction image
+  local mag_img = img:clone() -- sobel magnitude image
+  local dir_pix -- a pixel from the dir_img
+  local mag_pix -- a pixel from the mag_img
   
   local part_y -- the partial derivative for y
   local part_x -- the partial derivative for x
   local val -- unclipped calculated value of pixel sobel magnitude
   
   for row, col in img:pixels() do
-    pix = cpy_img:at( row, col )
+    dir_pix = dir_img:at( row, col )
+    mag_pix = mag_img:at( row, col )
     
     -- get the sobel partial x and partial y
     part_y, part_x = part_deriv( img, row, col )
     
     -- calculate the magnitude
     val = math.floor( math.sqrt( part_x*part_x + part_y*part_y ) )
-    pix.r = helpers.in_range( val )
-    
-    -- remove the color
-    pix.g = 128
-    pix.b = 128
-  end
-  
-  -- convert image from YIQ to RGB
-  il.YIQ2RGB( cpy_img )
-  
-  return cpy_img
-
-end
-
---[[    sobel_dir
-  |
-  |   Takes an image and calculates the smoothed sobel direction.
-  |   This is an edge detection operation that uses the x and y
-  |   partial derivatives to find local extrema, which represent edges.
-  |
-  |     Author: Scott Carda
---]]
-function funcs.sobel_dir( img )
-  
-  -- convert image from RGB to YIQ
-  il.RGB2YIQ( img )
-  
-  local cpy_img = img:clone() -- copy of image
-  local pix -- a pixel
-  
-  local part_y -- the partial derivative for y
-  local part_x -- the partial derivative for x
-  local val -- unclipped calculated value of pixel sobel magnitude
-  
-  for row, col in img:pixels() do
-    pix = cpy_img:at( row, col )
-    
-    -- get the sobel partial x and partial y
-    part_y, part_x = part_deriv( img, row, col )
+    mag_pix.r = helpers.in_range( val )
     
     -- calculate the direction using arctangent
     val = math.atan2( part_y, part_x )
@@ -395,17 +332,20 @@ function funcs.sobel_dir( img )
     
     -- map from radians to pixel intensities
     val = math.floor( val / ( 2 * math.pi ) * 256 )
-    pix.r = helpers.in_range( val )
+    dir_pix.r = helpers.in_range( val )
     
-    -- remove color
-    pix.g = 128
-    pix.b = 128
+    -- remove the color
+    mag_pix.g = 128
+    mag_pix.b = 128
+    dir_pix.g = 128
+    dir_pix.b = 128
   end
   
   -- convert image from YIQ to RGB
-  il.YIQ2RGB( cpy_img )
+  il.YIQ2RGB( dir_img )
+  il.YIQ2RGB( mag_img )
   
-  return cpy_img
+  return cpy_img, mag_img, dir_img
 
 end
 
