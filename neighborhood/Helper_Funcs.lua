@@ -239,6 +239,13 @@ end
   end
   
 end]]
+
+--[[    rotate_kirsch
+  |
+  |  Returns the corresponding kirsch filter for the given rotation
+  |
+  |     Author: Chris Smith
+--]]
 function funcs.rotate_kirsch( rot )
     if rot == 0 then
         return {
