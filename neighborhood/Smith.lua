@@ -144,65 +144,7 @@ end
   |     Author: Chris Smith
 --]]
 function funcs.kirsch_mag( img )
-
-end
---[[    kirsch_dir
-  |
-  |  Takes an image and applies the kirsch filters to each pixel in the image.
-  |  There are 8 kirsch filters applied to each pixel in the image and the
-  |  filter that produces the maximum magnitude is the value the center 
-  |  pixel is set to.
-  |
-  |     Author: Chris Smith
---]]
-function funcs.kirsch_dir( img )
-    local kirsch_mask
-    
-    il.RGB2YIQ( img )
-    
-    local cpy_img = img:clone()
-    local pix
-    local x, y
-    local sum
-    
-    for row, col in img:pixels() do
-        pix = cpy_img:at( row, col )
-        
-        local max = 0
-        sum = 0
-        for rot = 0, 7 do
-            --sum = 0
-            kirsch_mask = helpers.rotate_kirsch( rot )
-            for i = 1, 3 do
-                y = helpers.reflection( (row+i-2), 0, img.height)
-                for j = 1, 3 do
-                    x = helpers.reflection( (col+j-2), 0, img.width )
-                    sum = sum + img:at( y, x ).r * kirsch_mask[i][j]
-                end
-            end
-            sum = math.abs( sum )
-            --if sum > max then
-              --max = sum
-            --end
-        end--end rotation
-        
-        pix.r = helpers.in_range( sum )
-        pix.g = 128
-        pix.b = 128
-    end
-    il.YIQ2RGB(cpy_img)
-    return cpy_img
-
-end
---[[    Kirsch
-  |
-  |  Takes an image and performs both the kirsch direction and magnitude
-  |  calculations at once and returns both images.
-  |
-  |     Author: Chris Smith
---]]
-function funcs.kirsch( img )
-    local kirsch_mask
+local kirsch_mask
     
     il.RGB2YIQ( img )
     
@@ -237,6 +179,110 @@ function funcs.kirsch( img )
     end
     il.YIQ2RGB(cpy_img)
     return cpy_img
+end
+--[[    kirsch_dir
+  |
+  |  Takes an image and applies the kirsch filters to each pixel in the image.
+  |  There are 8 kirsch filters applied to each pixel in the image and the
+  |  filter that produces the maximum magnitude is the value the center 
+  |  pixel is set to.
+  |
+  |     Author: Chris Smith
+--]]
+function funcs.kirsch_dir( img )
+    local kirsch_mask
+    
+    il.RGB2YIQ( img )
+    
+    local cpy_img = img:clone()
+    local pix
+    local x, y
+    local sum
+    
+    for row, col in img:pixels() do
+        pix = cpy_img:at( row, col )
+        
+        local mag = 0
+        local max = 0
+        --sum = 0
+        for rot = 0, 7 do
+            sum = 0
+            kirsch_mask = helpers.rotate_kirsch( rot )
+            for i = 1, 3 do
+                y = helpers.reflection( (row+i-2), 0, img.height)
+                for j = 1, 3 do
+                    x = helpers.reflection( (col+j-2), 0, img.width )
+                    sum = sum + img:at( y, x ).r * kirsch_mask[i][j]
+                end
+            end
+            --sum = math.abs( sum )
+            if sum > mag then
+              mag = sum
+              max = rot
+            end
+        end--end rotation
+        max = math.floor((max / 8) * 256)
+        pix.r = helpers.in_range( max )
+        pix.g = 128
+        pix.b = 128
+    end
+    il.YIQ2RGB(cpy_img)
+    return cpy_img
+
+end
+--[[    Kirsch
+  |
+  |  Takes an image and performs both the kirsch direction and magnitude
+  |  calculations at once and returns both images.
+  |
+  |     Author: Chris Smith
+--]]
+function funcs.kirsch( img )
+    local kirsch_mask
+    
+    il.RGB2YIQ( img )
+    
+    local mag_img = img:clone()
+    local dir_img = img:clone()
+    local pix
+    local x, y
+    local sum
+    
+    for row, col in img:pixels() do
+        dir_pix = dir_img:at( row, col )
+        mag_pix = mag_img:at( row, col )
+        
+        local max = 0
+        local mag = 0
+        for rot = 0, 7 do
+            sum = 0
+            kirsch_mask = helpers.rotate_kirsch( rot )
+            for i = 1, 3 do
+                y = helpers.reflection( (row+i-2), 0, img.height)
+                for j = 1, 3 do
+                    x = helpers.reflection( (col+j-2), 0, img.width )
+                    sum = sum + img:at( y, x ).r * kirsch_mask[i][j]
+                end
+            end
+            --sum = math.abs( sum )
+            if sum > mag then
+              mag = sum
+              max = rot
+            end
+        end--end rotation
+        
+        mag_pix.r = helpers.in_range( mag/3 )
+        mag_pix.g = 128
+        mag_pix.b = 128
+        
+        dir_pix.r = helpers.in_range( math.floor(max/8*256) )
+        dir_pix.g = 128
+        dir_pix.b = 128
+    end
+    il.YIQ2RGB(img)
+    il.YIQ2RGB(mag_img)
+    il.YIQ2RGB(dir_img)
+    return img, mag_img, dir_img
 end
 --[[    emboss
   |
