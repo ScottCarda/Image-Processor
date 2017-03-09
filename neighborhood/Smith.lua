@@ -24,11 +24,13 @@ function funcs.oor_noise_cleaning_filter( img, thresh)
         pix = cpy_img:at(row, col )
         hist = helpers.sliding_histogram(img, row, col, size)
         sum = 0
+        --calculate sume of the neighboring pixels
         for i = 0, 255 do
             sum = sum + i * hist[i]
         end
+        --set sum equal to 1/8 * sum. Removing the center pixel from sum
         sum = 1/8*(sum - pix.r)
-
+        --If pixel minus sum is greater then user threshold set pixel equal to sum
         if math.abs( pix.r - sum ) >= thresh then
             pix.r = sum
         end
@@ -59,6 +61,7 @@ function funcs.median_filter( img, size )
         hist = helpers.sliding_histogram(img, row, col, size)
         i = -1
         count = 0
+        --find the middle value of the neighborhood and set pixel to it
         while count < math.ceil( size * size / 2 ) do
             i = i + 1
             count = count + hist[i]
@@ -94,10 +97,12 @@ function funcs.sd_filter( img, size)
         hist = helpers.sliding_histogram( img, row, col, size )
         sum = 0
         sq_sum = 0
+        --calculate the sum and the sum of the squares of neighborhood
         for i = 0, 255 do
             sum = sum + ( i * hist[i] )
             sq_sum = sq_sum + ( ( i * i ) * hist[i] )
         end
+        --set pixel to the standard deviation of the neighborhood
         pix.r = math.sqrt( ( sq_sum - ( sum*sum ) /n) / n)
     end
     il.YIQ2RGB (cpy_img)
@@ -125,10 +130,12 @@ function funcs.var_filter( img, size )
         hist = helpers.sliding_histogram( img, row, col, size )
         sum = 0
         sq_sum = 0
+        --calculate the sum and the sum of the squares of neighborhood
         for i = 0, 255 do
             sum = sum + ( i * hist[i] )
             sq_sum = sq_sum + ( ( i * i ) * hist[i] )
         end
+        --set the pixel to the variance of the neighborhood
         pix.r = helpers.in_range((sq_sum - (sum*sum) / n ) /n)
     end
     il.YIQ2RGB ( cpy_img)
@@ -156,9 +163,10 @@ local kirsch_mask
     for row, col in img:pixels() do
         pix = cpy_img:at( row, col )
         
-        local max = 0
+        local mag = 0
         for rot = 0, 7 do
             sum = 0
+            --get kirsch mask and sum up values using reflection on image borders
             kirsch_mask = helpers.rotate_kirsch( rot )
             for i = 1, 3 do
                 y = helpers.reflection( (row+i-2), 0, img.height)
@@ -168,12 +176,12 @@ local kirsch_mask
                 end
             end
             --sum = math.abs( sum )
-            if sum > max then
-              max = sum
+            if sum > mag then
+              mag = sum -- store the magnitude
             end
         end--end rotation
         
-        pix.r = helpers.in_range( max/3 )
+        pix.r = helpers.in_range( mag/3 )
         pix.g = 128
         pix.b = 128
     end
@@ -204,9 +212,10 @@ function funcs.kirsch_dir( img )
         
         local mag = 0
         local max = 0
-        --sum = 0
+        --loop over all 8 directions of kirsch mask
         for rot = 0, 7 do
             sum = 0
+            --get kirsch mask and sum up values using reflection on image borders
             kirsch_mask = helpers.rotate_kirsch( rot )
             for i = 1, 3 do
                 y = helpers.reflection( (row+i-2), 0, img.height)
@@ -217,8 +226,8 @@ function funcs.kirsch_dir( img )
             end
             --sum = math.abs( sum )
             if sum > mag then
-              mag = sum
-              max = rot
+              mag = sum -- store the magnitude
+              max = rot -- store the rotation that gives largest magnitude
             end
         end--end rotation
         max = math.floor((max / 8) * 256)
@@ -256,6 +265,7 @@ function funcs.kirsch( img )
         local mag = 0
         for rot = 0, 7 do
             sum = 0
+            --get kirsch mask and sum up values using reflection on image borders
             kirsch_mask = helpers.rotate_kirsch( rot )
             for i = 1, 3 do
                 y = helpers.reflection( (row+i-2), 0, img.height)
@@ -263,11 +273,11 @@ function funcs.kirsch( img )
                     x = helpers.reflection( (col+j-2), 0, img.width )
                     sum = sum + img:at( y, x ).r * kirsch_mask[i][j]
                 end
-            end
-            --sum = math.abs( sum )
+            end-- end filter
+            
             if sum > mag then
-              mag = sum
-              max = rot
+              mag = sum -- store the maximum magnitude
+              max = rot -- store the direction that gives largest magnitude
             end
         end--end rotation
         
@@ -290,6 +300,10 @@ end
   |  and to left of the current pixel and the -1 is down and to the right of 
   |  the center pixel. Those two pixels are then added together after being multiplied
   |  by 1 and -1 and the center pixel is set to the result.
+  |
+  |   Emboss Filter: 1  0  0
+  |                  0  0  0
+  |                  0  0 -1
   |
   |     Author: Chris Smith
 --]]
