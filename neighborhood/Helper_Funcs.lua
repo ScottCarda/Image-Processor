@@ -161,49 +161,49 @@ end
   |     Author: Chris Smith
 --]]
 function funcs.rotate_kirsch( rot )
-    if rot == 0 then
+    if rot == 0 then --East
         return {
           {-3,-3, 5},
           {-3, 0, 5},
           {-3,-3, 5}
         }
-    elseif rot == 1 then
+    elseif rot == 1 then --North East
         return {
           {-3, 5, 5},
           {-3, 0, 5},
           {-3,-3,-3}
         }
-    elseif rot == 2 then
+    elseif rot == 2 then --North
         return {
           { 5, 5, 5},
           {-3, 0,-3},
           {-3,-3,-3}
         }
-    elseif rot == 3 then
+    elseif rot == 3 then --North West
         return {
           { 5, 5,-3},
           { 5, 0,-3},
           {-3,-3,-3}
         }
-    elseif rot == 4 then
+    elseif rot == 4 then  --West
         return {
           {5,-3,-3},
           {5, 0,-3},
           {5,-3,-3}
         }
-    elseif rot == 5 then
+    elseif rot == 5 then --South West
         return {
           {-3,-3,-3},
           { 5, 0,-3},
           { 5, 5,-3}
         }
-    elseif rot == 6 then
+    elseif rot == 6 then --South
         return {
           {-3,-3,-3},
           {-3, 0,-3},
           { 5, 5, 5}
         }
-    else
+    else              --South East
         return {
           {-3,-3,-3},
           {-3, 0, 5},
