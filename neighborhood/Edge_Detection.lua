@@ -1,9 +1,9 @@
 --[[
-  |                                  Main.lua                                  |
+  |                                  Edge_Detection.lua                        |
   |                                                                            |
   |                                                                            |
   |   This file contains the fucntion definitions for the edge detection       |
-  |   menu items.                                                               |
+  |   menu items.                                                              |
   |                                                                            |
   |   Authors:                                                                 |
   |     Scott Carda,                                                           |
