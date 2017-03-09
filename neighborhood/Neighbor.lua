@@ -1,7 +1,18 @@
+--[[
+  |                           Neighbor.lua                                     |
+  |                                                                            |
+  |                                                                            |
+  |   This file contains the definitions neighborhood processes that use       |
+  |   filter convlolution.                                                     |
+  |                                                                            |
+  |   Authors:                                                                 |
+  |     Scott Carda,                                                           |
+  |     Christopher Smith                                                      |
+  |                                                                            |
+--]]
 
-require "ip"
-local il = require("il")
-local helpers = require "Helper_Funcs"
+local il = require ( "il" )
+local helpers = require ( "Helper_Funcs" )
 
 local funcs = {}
 
@@ -116,167 +127,69 @@ function funcs.sharp_filter( img )
   
 end
 
---[[    sliding_plus_histogram
+--[[    oor_noise_cleaning_filter
   |
-  |   Takes an image, a position in the image. Efficiently
-  |   calculates the histogram of the plus-shaped neighborhood centered
-  |   on the given position by using the previously computed histogram.
-  |   This function is intended to be called in a row-major image loop.
+  |   Takes an image and a threshold value to determine if the the center pixel
+  |   in a 3x3 neighborhood is correlated to the surrounding pixels. If the sum
+  |   of its neighbors multiplied by 1/8 is greater than the threshold, the
+  |   pixel is deteremend to not be correlated and set to average of its neighbors
   |
-  |     Authors: Scott Carda
+  |     Author: Chris Smith
 --]]
-do
-  local hist -- the histogram
-  local row_start_hist -- the histogram at the beginning of a row
-  function sliding_plus_histogram( img, row, col )
-    
-    local x, y -- coordinates for a pixel
-    local val -- value of a particular pixel's intensity
-    
-    -- if it is the first histogram of the image, make a new histogram
-    if row == 0 and col == 0 then
-      
-      -- initialize the histogram
-      row_start_hist = {}
-      for i = 0, 255 do
-        row_start_hist[i] = 0
-      end
-      
-      -- initial neighborhood histogram's values
-      val = img:at( helpers.reflection( (row-1), 0, img.height ), col ).r
-      row_start_hist[val] = row_start_hist[val] + 1
-      val = img:at( row, col ).r
-      row_start_hist[val] = row_start_hist[val] + 1
-      val = img:at( row, helpers.reflection( (col-1), 0, img.width ) ).r
-      row_start_hist[val] = row_start_hist[val] + 1
-      val = img:at( row, helpers.reflection( (col+1), 0, img.width ) ).r
-      row_start_hist[val] = row_start_hist[val] + 1
-      val = img:at( helpers.reflection( (row+1), 0, img.height ), col ).r
-      row_start_hist[val] = row_start_hist[val] + 1
-      
-      hist = helpers.table_copy( row_start_hist )
-      
-    -- if it is the first histogram of a row, slide down from the previous row_start_hist
-    elseif col == 0 then
-      
-      -- remove old left value
-      y = helpers.reflection( row-1, 0, img.height )
-      x = helpers.reflection( col-1, 0, img.width )
-      val = img:at( y, x ).r
-      row_start_hist[val] = row_start_hist[val] - 1
-      
-      -- remove old right value
-      x = helpers.reflection( col+1, 0, img.width )
-      val = img:at( y, x ).r
-      row_start_hist[val] = row_start_hist[val] - 1
-      
-      -- add new right value
-      y = helpers.reflection( row, 0, img.height )
-      val = img:at( y, x ).r
-      row_start_hist[val] = row_start_hist[val] + 1
-      
-      -- add new left value
-      x = helpers.reflection( col-1, 0, img.width )
-      val = img:at( y, x ).r
-      row_start_hist[val] = row_start_hist[val] + 1
-      
-      -- add new bottom value
-      y = helpers.reflection( row+1, 0, img.height )
-      x = helpers.reflection( col, 0, img.width )
-      val = img:at( y, x ).r
-      row_start_hist[val] = row_start_hist[val] + 1
-      
-      -- remove old top value
-      y = helpers.reflection( row-2, 0, img.height )
-      val = img:at( y, x ).r
-      row_start_hist[val] = row_start_hist[val] - 1
-      
-      hist = helpers.table_copy( row_start_hist )
-      
-    else -- else, slide right from the previous histogram
-      
-      -- remove old top value
-      y = helpers.reflection( row-1, 0, img.height )
-      x = helpers.reflection( col-1, 0, img.width )
-      val = img:at( y, x ).r
-      hist[val] = hist[val] - 1
-      
-      -- remove old bottom value
-      y = helpers.reflection( row+1, 0, img.height )
-      val = img:at( y, x ).r
-      hist[val] = hist[val] - 1
-      
-      -- add new bottom value
-      x = helpers.reflection( col, 0, img.width )
-      val = img:at( y, x ).r
-      hist[val] = hist[val] + 1
-      
-      -- add new top value
-      y = helpers.reflection( row-1, 0, img.height )
-      val = img:at( y, x ).r
-      hist[val] = hist[val] + 1
-      
-      -- add new right value
-      y = helpers.reflection( row, 0, img.height )
-      x = helpers.reflection( col+1, 0, img.width )
-      val = img:at( y, x ).r
-      hist[val] = hist[val] + 1
-      
-      -- remove old left value
-      x = helpers.reflection( col-2, 0, img.width )
-      val = img:at( y, x ).r
-      hist[val] = hist[val] - 1
-      
+function funcs.oor_noise_cleaning_filter( img, thresh)
+  il.RGB2YIQ( img )
+  local cpy_img = img:clone()
+  local pix
+  local sum
+  local size = 3
+  local hist
+  local abs = math.abs
+  for row, col in img:pixels() do
+    pix = cpy_img:at(row, col )
+    hist = helpers.sliding_histogram(img, row, col, size)
+    sum = 0
+    --calculate sume of the neighboring pixels
+    for i = 0, 255 do
+      sum = sum + i * hist[i]
     end
-      
-    return hist
-    
+    --set sum equal to 1/8 * sum. Removing the center pixel from sum
+    sum = 1/8*(sum - pix.r)
+    --If pixel minus sum is greater then user threshold set pixel equal to sum
+    if abs( pix.r - sum ) >= thresh then
+      pix.r = sum
+    end
   end
+  il.YIQ2RGB( cpy_img )
+  return cpy_img
 end
 
---[[    plus_median_filter
+--[[    emboss
   |
-  |   Takes an image and calculates the median intensity of the
-  |   intensities in the plus-shaped neighborhood and assigns that median
-  |   as the intensity for the target pixel. It will perform this
-  |   neighborhood operation on each pixel in the image.
+  |  Takes an image and applies an embossing filter where 1 is the pixel above 
+  |  and to left of the current pixel and the -1 is down and to the right of 
+  |  the center pixel. Those two pixels are then added together after being multiplied
+  |  by 1 and -1 and the center pixel is set to the result.
   |
-  |     Authors: Scott Carda
+  |   Emboss Filter: 1  0  0
+  |                  0  0  0
+  |                  0  0 -1
+  |
+  |     Author: Chris Smith
 --]]
-function funcs.plus_median_filter( img )
-  
-  -- convert image from RGB to YIQ
+function funcs.emboss( img)
   il.RGB2YIQ( img )
-  
-  local cpy_img = img:clone() -- copy of image
-  local pix -- a pixel
-  
-  local median -- the median of the intensities of the pixels in a neighborhood
-  local hist -- the histogram of pixel intensities in a neighborhood
-  
+
+  local cpy_img = img:clone()
+  local pix, neg_pix, pos_pix
+  local x, y
   for row, col in img:pixels() do
     pix = cpy_img:at( row, col )
-    
-    -- using sliding histogram plus to efficiently get the
-    -- histogram of the current pixel's neighborhood
-    hist = sliding_plus_histogram( img, row, col )
-    
-    median = -1
-    local sum = 0 -- the number of pixels found so far
-    -- there are 5 pixels in a neighborhood, so find the 3rd one
-    while sum < 3 and median < 255 do
-      median = median + 1
-      sum = sum + hist[median]
-    end
-    
-    pix.r = helpers.in_range( median )
+    pos_pix = img:at(  helpers.reflection( row-1,0,img.height) , helpers.reflection(col - 1,0,img.width))
+    neg_pix = img:at( helpers.reflection( row+1,0,img.height) , helpers.reflection(col + 1,0,img.width))
+    pix.r = helpers.in_range(128 + pos_pix.r - neg_pix.r)
   end
-  
-  -- convert image from YIQ to RGB
-  il.YIQ2RGB( cpy_img )
-  
+  il.YIQ2RGB(cpy_img)
   return cpy_img
-  
 end
   
 return funcs

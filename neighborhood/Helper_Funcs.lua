@@ -1,3 +1,17 @@
+--[[
+  |                              HelperFuncs.lua                               |
+  |                                                                            |
+  |   This file contains various miscellaneous functions that are used commonly|
+  |in the image processing functions.                                          |
+  |                                                                            |
+  |   Authors:                                                                 |
+  |     Scott Carda,                                                           |
+  |     Christopher Smith                                                      |
+  |                                                                            |
+--]]
+
+local il = require ( "il" )
+
 local funcs = {}
 
 --[[    in_range

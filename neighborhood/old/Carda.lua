@@ -349,60 +349,6 @@ function funcs.sobel( img )
 
 end
 
---[[    laplacian
-  |
-  |   Takes an image and calculates the Laplacian edge operator.
-  |   This is an edge detection operation that uses the a filter.
-  |
-  |     Author: Scott Carda
---]]
-function funcs.laplacian( img )
 
-  -- the filter for the Laplacian operation
-  local filter = {
-      { 0,-1, 0},
-      {-1, 4,-1},
-      { 0,-1, 0}
-    }
-  
-  -- convert image from RGB to YIQ
-  il.RGB2YIQ( img )
-  
-  local cpy_img = img:clone() -- copy of image
-  local pix -- a pixel
-  local x, y -- coordinates for a pixel
-  
-  -- the neighborhood summation of the products of the
-  -- intensities of pixels with their respective filter element
-  local sum
-  
-  for row, col in img:pixels() do
-    pix = cpy_img:at( row, col )
-    
-    sum = 0
-    -- neighborhood loop
-    for i = 1, 3 do
-      y = helpers.reflection( (row+i-2), 0, img.height )
-      for j = 1, 3 do
-        x = helpers.reflection( (col+j-2), 0, img.width )
-        
-        sum = sum + img:at( y, x ).r * filter[i][j]
-        
-      end
-    end
-    
-    -- offset the value by 128
-    sum = sum + 128
-    
-    -- assign the clipped value
-    pix.rgb[0] = helpers.in_range( math.abs( sum ) )
-  end
-  
-  -- convert image from YIQ to RGB
-  il.YIQ2RGB( cpy_img )
-  
-  return cpy_img
-
-end
 
 return funcs

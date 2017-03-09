@@ -18,11 +18,13 @@
   |                                                                            |
 --]]
 
-require("ip")
-local viz = require("visual")
-local il = require("il")
+require( "ip" )
+local viz = require( "visual" )
+local il = require( "il" )
 
-local Merged = require( "Merged" )
+local Neighbor = require( "Neighbor" )
+local Edge = require( "Edge_Detection" )
+local Rank = require( "Rank_Filters" )
 
 local cmarg1 = {name = "color model", type = "string", displaytype = "combo", choices = {"rgb", "yiq", "ihs"}, default = "rgb"}
 local cmarg2 = {name = "color model", type = "string", displaytype = "combo", choices = {"yiq", "yuv", "ihs"}, default = "yiq"}
@@ -30,43 +32,42 @@ local cmarg3 = {name = "interpolation", type = "string", displaytype = "combo", 
 
 imageMenu("Neighborhood Processes",
   {
-    {"Smooth", Merged.smooth_filter },
-    {"Sharpen", Merged.sharp_filter },
-    {"Noise Cleaning", Merged.oor_noise_cleaning_filter,
+    {"Smooth", Neighbor.smooth_filter },
+    {"Sharpen", Neighbor.sharp_filter },
+    {"Noise Cleaning", Neighbor.oor_noise_cleaning_filter,
         {{name = "Threshold", type = "number", displaytype = "slider", default = 128, min = 0, max = 255}}
     },
-    {"Mean", Merged.mean_filter,
+    {"Mean", Rank.mean_filter,
       {{name = "Width", type = "number", displaytype = "spin", default = 3, min = 3, max = 65}}
     },
-    {"Median", Merged.median_filter,
+    {"Median", Rank.median_filter,
         {{name = "Width", type = "number", displaytype = "spin", default = 3, min = 3, max = 65}}
     },
-    {"Median+", Merged.plus_median_filter},
-    {"Minimum", Merged.min_filter,
+    {"Median+", Rank.plus_median_filter},
+    {"Minimum", Rank.min_filter,
       {{name = "Width", type = "number", displaytype = "spin", default = 3, min = 3, max = 65}}
     },
-    {"Maximum", Merged.max_filter,
+    {"Maximum", Rank.max_filter,
       {{name = "Width", type = "number", displaytype = "spin", default = 3, min = 3, max = 65}}
     },
-    {"Emboss", Merged.emboss}
+    {"Emboss", Neighbor.emboss}
   }
 )
 
 imageMenu("Edge Detection",
   {
-    {"Sobel Edge", Merged.sobel},
-    {"Kirsch Edge", Merged.kirsch},
-    {"Laplacian", Merged.laplacian},
-    {"Range", Merged.range_filter,
+    {"Sobel Edge", Edge.sobel},
+    {"Kirsch Edge", Edge.kirsch},
+    {"Laplacian", Edge.laplacian},
+    {"Range", Edge.range_filter,
       {{name = "Width", type = "number", displaytype = "spin", default = 3, min = 0, max = 65}}
     },
-    {"Variance", Merged.var_filter,
+    {"Variance", Edge.var_filter,
         {{name = "Width", type = "number", displaytype = "spin", default = 3, min = 0, max = 65}}
     },
-    {"Std Dev", Merged.sd_filter,
+    {"Std Dev", Edge.sd_filter,
         {{name = "Width", type = "number", displaytype = "spin", default = 3, min = 0, max = 65}}
-    },
-    
+    } 
   }
 )
 
