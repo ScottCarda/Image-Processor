@@ -11,10 +11,102 @@
   |                                                                            |
 --]]
 
+require ( "ip" )
 local il = require ( "il" )
 local helpers = require ( "Helper_Funcs" )
 
 local funcs = {}
+
+function funcs.new_sobel( img )
+  
+  -- make a copy of the image to return
+  local cpy_img = img:clone()
+  
+  -- convert image from RGB to YIQ
+  il.RGB2YIQ( img )
+  
+  -- tables for keeping track of partially computed partial derivatives
+  local y_table = {}
+  local x_table = {}
+  
+  -- make the tables 2D
+  for i = 0, img.height-1 do
+    x_table[i] = {}
+    y_table[i] = {}
+  end
+  
+  local dir_img = image.flat( img.width, img.height, 128 ) -- sobel direction image
+  local mag_img = image.flat( img.width, img.height, 128 ) -- sobel magnitude image
+  local dir_pix -- a pixel from the dir_img
+  local mag_pix -- a pixel from the mag_img
+  
+  local part_y -- the partial derivative for y
+  local part_x -- the partial derivative for x
+  local val -- temperary value used for calculations
+  
+  local x, y -- pixel coordinates
+  
+  -- separated filters for the sobel partial derivative filters
+  local filter1 = { -1, 0, 1 }
+  local filter2 = { 1, 2, 1 }
+  
+  -- first sweep of the image populates the x_table
+  -- and y_table with the partially calculated values
+  for row, col in img:pixels() do
+    
+    part_x = 0
+    part_y = 0
+    for i = 1, 3 do
+      x = helpers.reflection( col+i-2, 0, img.width )
+      part_x = part_x + img:at( row, x ).r * filter1[i]
+      part_y = part_y + img:at( row, x ).r * filter2[i]
+    end
+    
+    x_table[row][col] = part_x
+    y_table[row][col] = part_y
+  end
+  
+  -- filter one has to be adjusted here to get the proper direction on y
+  filter1 = { 1, 0, -1 }
+  
+  -- second sweep grabs the partially calculated values from the tables
+  -- and finishes the calculation for part_x and part_y
+  for row, col in img:pixels() do
+    dir_pix = dir_img:at( row, col )
+    mag_pix = mag_img:at( row, col )
+    
+    part_x = 0
+    part_y = 0
+    for i = 1, 3 do
+      y = helpers.reflection( row+i-2, 0, img.height )
+      part_x = part_x + x_table[y][col] * filter2[i]
+      part_y = part_y + y_table[y][col] * filter1[i]
+    end
+  
+    -- calculate the magnitude
+    val = math.floor( math.sqrt( part_x*part_x + part_y*part_y ) )
+    mag_pix.r = helpers.in_range( val )
+    
+    -- calculate the direction using arctangent
+    val = math.atan2( part_y, part_x )
+    -- adjust for negative values
+    if val < 0 then
+      val = val + 2 * math.pi
+    end
+    
+    -- map from radians to pixel intensities
+    val = math.floor( val / ( 2 * math.pi ) * 256 )
+    dir_pix.r = helpers.in_range( val )
+  
+  end
+
+  -- convert image from YIQ to RGB
+  il.YIQ2RGB( dir_img )
+  il.YIQ2RGB( mag_img )
+  
+  return cpy_img, mag_img, dir_img
+  
+end
 
 --[[    part_deriv
   |
