@@ -20,7 +20,8 @@ local funcs = {}
   |
   |   Takes an image and applies a smoothing filter to it.
   |   The smooth filter is separated into two 1-D filters, and applied
-  |   consecutively to the image to produce the smoothing effect.
+  |   consecutively to the image to produce the smoothing effect. This was
+  |   implemented using a separated filter to increase the efficiency of the operation.
   |
   |     Author: Scott Carda
 --]]

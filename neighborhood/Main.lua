@@ -57,7 +57,6 @@ imageMenu("Neighborhood Processes",
 imageMenu("Edge Detection",
   {
     {"Sobel Edge", Edge.sobel},
-    {"New Sobel Edge", Edge.new_sobel},
     {"Kirsch Edge", Edge.kirsch},
     {"Laplacian", Edge.laplacian},
     {"Range", Edge.range_filter,
