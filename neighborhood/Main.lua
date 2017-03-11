@@ -35,13 +35,13 @@ imageMenu("Neighborhood Processes",
     {"Smooth", Neighbor.smooth_filter },
     {"Sharpen", Neighbor.sharp_filter },
     {"Noise Cleaning", Neighbor.oor_noise_cleaning_filter,
-        {{name = "Threshold", type = "number", displaytype = "slider", default = 128, min = 0, max = 255}}
+      {{name = "Threshold", type = "number", displaytype = "slider", default = 128, min = 0, max = 255}}
     },
     {"Mean", Rank.mean_filter,
       {{name = "Width", type = "number", displaytype = "spin", default = 3, min = 3, max = 65}}
     },
     {"Median", Rank.median_filter,
-        {{name = "Width", type = "number", displaytype = "spin", default = 3, min = 3, max = 65}}
+      {{name = "Width", type = "number", displaytype = "spin", default = 3, min = 3, max = 65}}
     },
     {"Median+", Rank.plus_median_filter},
     {"Minimum", Rank.min_filter,
@@ -63,10 +63,10 @@ imageMenu("Edge Detection",
       {{name = "Width", type = "number", displaytype = "spin", default = 3, min = 0, max = 65}}
     },
     {"Variance", Edge.var_filter,
-        {{name = "Width", type = "number", displaytype = "spin", default = 3, min = 0, max = 65}}
+      {{name = "Width", type = "number", displaytype = "spin", default = 3, min = 0, max = 65}}
     },
     {"Std Dev", Edge.sd_filter,
-        {{name = "Width", type = "number", displaytype = "spin", default = 3, min = 0, max = 65}}
+      {{name = "Width", type = "number", displaytype = "spin", default = 3, min = 0, max = 65}}
     } 
   }
 )
@@ -76,13 +76,13 @@ imageMenu("Misc",
     {"Grayscale YIQ\tCtrl-M", il.grayscaleYIQ, hotkey = "C-M"},
     {"Contrast Stretch", il.stretch, {cmarg2}},
     {"Histogram Equalize", il.equalize,
-       {{name = "color model", type = "string", displaytype = "combo", choices = {"ihs", "yiq", "yuv", "rgb"}, default = "ihs"}}
+      {{name = "color model", type = "string", displaytype = "combo", choices = {"ihs", "yiq", "yuv", "rgb"}, default = "ihs"}}
     },
     {"Binary Threshold", il.threshold,
       {{name = "threshold", type = "number", displaytype = "slider", default = 128, min = 0, max = 255}}
     },
     {"Display Histogram", il.showHistogram,
-       {{name = "color model", type = "string", displaytype = "combo", choices = {"yiq", "rgb"}, default = "yiq"}}
+      {{name = "color model", type = "string", displaytype = "combo", choices = {"yiq", "rgb"}, default = "yiq"}}
     }
   }
 )

@@ -26,56 +26,56 @@ local funcs = {}
   |     Author: Scott Carda
 --]]
 function funcs.smooth_filter( img )
-  
+
   -- the smooth filter after it has been separated
   local small_filter = { 1/4, 2/4, 1/4 }
-  
+
   -- convert image from RGB to YIQ
   il.RGB2YIQ( img )
-  
+
   local cpy_img = img:clone() -- copy of image
   local pix -- a pixel
-  
+
   -- the neighborhood summation of the products of the
   -- intensities of pixels with their respective filter element
   local sum
   local x, y -- coordinates for a pixel
-  
+
   -- apply the filter along the x dimension
   for row, col in img:pixels() do
     pix = cpy_img:at( row, col )
-    
+
     sum = 0
     for i = 1, 3 do
       x = helpers.reflection( (col+i-2), 0, img.width )
       -- convolve the neighborhood with the filter
       sum = sum + img:at( row, x ).r * small_filter[i]
-      
+
     end
-    
+
     pix.r = helpers.in_range( sum )
   end
-  
+
   -- apply the filter along the y dimension
   for row, col in cpy_img:pixels() do
     pix = img:at( row, col )
-    
+
     sum = 0
     for i = 1, 3 do
       y = helpers.reflection( (row+i-2), 0, img.height )
       -- convolve the neighborhood with the filter
       sum = sum + cpy_img:at( y, col ).r * small_filter[i]
-      
+
     end
-    
+
     pix.r = helpers.in_range( sum )
   end
-  
+
   -- convert image from YIQ to RGB
   il.YIQ2RGB( img )
-  
+
   return img
-  
+
 end
 
 --[[    sharp_filter
@@ -85,28 +85,28 @@ end
   |     Author: Scott Carda
 --]]
 function funcs.sharp_filter( img )
-  
+
   -- the sharpen filter
   local filter = {
     {0,-1,0},
     {-1,5,-1},
     {0,-1,0}
   }
-  
+
   -- convert image from RGB to YIQ
   il.RGB2YIQ( img )
-  
+
   local cpy_img = img:clone() -- copy of image
   local pix -- a pixel
-  
+
   -- the neighborhood summation of the products of the
   -- intensities of pixels with their respective filter element
   local sum
   local x, y -- coordinates for a pixel
-  
+
   for row, col in img:pixels() do
     pix = cpy_img:at( row, col )
-    
+
     sum = 0
     for i = 1, 3 do
       y = helpers.reflection( (row+i-2), 0, img.height )
@@ -114,18 +114,18 @@ function funcs.sharp_filter( img )
         x = helpers.reflection( (col+j-2), 0, img.width )
         -- convolve the neighborhood with the filter
         sum = sum + img:at( y, x ).r * filter[i][j]
-        
+
       end
     end
-    
+
     pix.r = helpers.in_range( sum )
   end
-  
+
   -- convert image from YIQ to RGB
   il.YIQ2RGB( cpy_img )
-  
+
   return cpy_img
-  
+
 end
 
 --[[    oor_noise_cleaning_filter
@@ -192,5 +192,5 @@ function funcs.emboss( img)
   il.YIQ2RGB(cpy_img)
   return cpy_img
 end
-  
+
 return funcs

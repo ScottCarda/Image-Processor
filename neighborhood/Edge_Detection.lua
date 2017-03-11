@@ -29,42 +29,42 @@ local funcs = {}
   |       Christopher Smith
 --]]
 function funcs.sobel( img )
-  
+
   -- make a copy of the image to return
   local cpy_img = img:clone()
-  
+
   -- convert image from RGB to YIQ
   il.RGB2YIQ( img )
-  
+
   -- tables for keeping track of partially computed partial derivatives
   local y_table = {}
   local x_table = {}
-  
+
   -- make the tables 2D
   for i = 0, img.height-1 do
     x_table[i] = {}
     y_table[i] = {}
   end
-  
+
   local dir_img = image.flat( img.width, img.height, 128 ) -- sobel direction image
   local mag_img = image.flat( img.width, img.height, 128 ) -- sobel magnitude image
   local dir_pix -- a pixel from the dir_img
   local mag_pix -- a pixel from the mag_img
-  
+
   local part_y -- the partial derivative for y
   local part_x -- the partial derivative for x
   local val -- temperary value used for calculations
-  
+
   local x, y -- pixel coordinates
-  
+
   -- separated filters for the sobel partial derivative filters
   local filter1 = { -1, 0, 1 }
   local filter2 = { 1, 2, 1 }
-  
+
   -- first sweep of the image populates the x_table
   -- and y_table with the partially calculated values
   for row, col in img:pixels() do
-    
+
     part_x = 0
     part_y = 0
     for i = 1, 3 do
@@ -72,20 +72,20 @@ function funcs.sobel( img )
       part_x = part_x + img:at( row, x ).r * filter1[i]
       part_y = part_y + img:at( row, x ).r * filter2[i]
     end
-    
+
     x_table[row][col] = part_x
     y_table[row][col] = part_y
   end
-  
+
   -- filter one has to be adjusted here to get the proper direction on y
   filter1 = { 1, 0, -1 }
-  
+
   -- second sweep grabs the partially calculated values from the tables
   -- and finishes the calculation for part_x and part_y
   for row, col in img:pixels() do
     dir_pix = dir_img:at( row, col )
     mag_pix = mag_img:at( row, col )
-    
+
     part_x = 0
     part_y = 0
     for i = 1, 3 do
@@ -93,48 +93,82 @@ function funcs.sobel( img )
       part_x = part_x + x_table[y][col] * filter2[i]
       part_y = part_y + y_table[y][col] * filter1[i]
     end
-  
+
     -- calculate the magnitude
     val = math.floor( math.sqrt( part_x*part_x + part_y*part_y ) )
     mag_pix.r = helpers.in_range( val )
-    
+
     -- calculate the direction using arctangent
     val = math.atan2( part_y, part_x )
     -- adjust for negative values
     if val < 0 then
       val = val + 2 * math.pi
     end
-    
+
     -- map from radians to pixel intensities
     val = math.floor( val / ( 2 * math.pi ) * 256 )
     dir_pix.r = helpers.in_range( val )
-  
+
   end
 
   -- convert image from YIQ to RGB
   il.YIQ2RGB( dir_img )
   il.YIQ2RGB( mag_img )
-  
+
   return cpy_img, mag_img, dir_img
-  
+
 end
 
+
+--[[    kirsch
+  |
+  |  Helper function to return changing -3 and 5 locations in kirsch based on rotation.
+  |  Similar to a sliding neighborhood solution.
+  |
+  |     Author: Chris Smith
+--]]
+local function rotate_values(i)
+  if i == 0 then
+    return { 1, 1 }, {2,3} --North East
+  elseif i == 1 then
+    return { 2, 1 }, {1,3} --North
+  elseif i == 2 then
+    return { 3, 1 }, {1,2} --NW
+  elseif i == 3 then
+    return { 3, 2 }, {1,1} --W
+  elseif i == 4 then
+    return { 3, 3 }, {2,1} --SW
+  elseif i == 5 then
+    return { 2, 3 }, {3,1} --S
+  end
+  return { 1, 3 }, {3,2} --SE
+end
 --[[    kirsch
   |
   |  Takes an image and performs both the kirsch direction and magnitude
   |  calculations at once and returns both images.
   |
-  |     Author: Chris Smith
+  |  This Version of a kirsch uses a method similar to a sliding neighborhood so
+  |  that values are not recalculated for every kirsch rotation
+  |
+  |     Authors: Chris Smith, Scott Carda
 --]]
 function funcs.kirsch( img )
-  local kirsch_mask
+
+  local kirsch_mask = {
+    {-3,-3,5},
+    {-3, 0,5},
+    {-3,-3,5}
+  }
+  local lead_val = {}
+  local trail_val = {}
   local cpy_img = img:clone()
   il.RGB2YIQ( img )
 
   local mag_img = img:clone()
   local dir_img = img:clone()
   local dir_pix, mag_pix
-  local x, y
+  local x, y, t_y, t_x
   local sum
   local max, mag
 
@@ -142,26 +176,34 @@ function funcs.kirsch( img )
     dir_pix = dir_img:at( row, col )
     mag_pix = mag_img:at( row, col )
 
+    lead_val = {1,2} 
+    trail_val = {3,3}
+    sum = 0
     max = 0
-    mag = 0
-    for rot = 0, 7 do
-      sum = 0
-      --get kirsch mask and sum up values using reflection on image borders
-      kirsch_mask = helpers.rotate_kirsch( rot )
-      for i = 1, 3 do
-        y = helpers.reflection( (row+i-2), 0, img.height)
-        for j = 1, 3 do
-          x = helpers.reflection( (col+j-2), 0, img.width )
-          sum = sum + img:at( y, x ).r * kirsch_mask[i][j]
-        end
-      end-- end filter
-
-      if sum > mag then
-        mag = sum -- store the maximum magnitude
-        max = rot -- store the direction that gives largest magnitude
+    --Apply the kirsch filter for the east direction
+    for i = 1, 3 do
+      y = helpers.reflection( (row+i-2), 0, img.height)
+      for j = 1, 3 do
+        x = helpers.reflection( (col+j-2), 0, img.width )
+        sum = sum + kirsch_mask[i][j] * img:at(y,x).r
       end
-    end--end rotation
-
+    end
+    mag = sum
+    --Apply the remaining kirsch filters using a sliding neighborhood method
+    for i = 0, 6 do
+      y = helpers.reflection(   row + lead_val[1] - 2, 0, img.height )
+      x = helpers.reflection(   col + lead_val[2] - 2, 0, img.width  )
+      t_y = helpers.reflection( row + trail_val[1]- 2, 0, img.height )
+      t_x = helpers.reflection( col + trail_val[2]- 2, 0, img.width  )
+      --  8 *img:at(y,x) is for a pixel changing from a -3 to  a 5 in a rotation
+      -- -8 * img:at(t_y, t_x) is for a pixel changing from a 5 to a -3 in a rotation
+      sum = sum  + 8 * img:at(y,x).r - 8 * img:at(t_y, t_x).r
+      if( sum > mag) then
+        mag = sum
+        max = i + 1
+      end
+      lead_val, trail_val = rotate_values(i)
+    end
     mag_pix.r = helpers.in_range( mag/3 )
     mag_pix.g = 128
     mag_pix.b = 128
@@ -186,47 +228,47 @@ function funcs.laplacian( img )
 
   -- the filter for the Laplacian operation
   local filter = {
-      { 0,-1, 0},
-      {-1, 4,-1},
-      { 0,-1, 0}
-    }
-  
+    { 0,-1, 0},
+    {-1, 4,-1},
+    { 0,-1, 0}
+  }
+
   -- convert image from RGB to YIQ
   il.RGB2YIQ( img )
-  
+
   local cpy_img = img:clone() -- copy of image
   local pix -- a pixel
   local x, y -- coordinates for a pixel
-  
+
   -- the neighborhood summation of the products of the
   -- intensities of pixels with their respective filter element
   local sum
-  
+
   for row, col in img:pixels() do
     pix = cpy_img:at( row, col )
-    
+
     sum = 0
     -- neighborhood loop
     for i = 1, 3 do
       y = helpers.reflection( (row+i-2), 0, img.height )
       for j = 1, 3 do
         x = helpers.reflection( (col+j-2), 0, img.width )
-        
+
         sum = sum + img:at( y, x ).r * filter[i][j]
-        
+
       end
     end
-    
+
     -- offset the value by 128
     sum = sum + 128
-    
+
     -- assign the clipped value
     pix.rgb[0] = helpers.in_range( math.abs( sum ) )
   end
-  
+
   -- convert image from YIQ to RGB
   il.YIQ2RGB( cpy_img )
-  
+
   return cpy_img
 
 end
@@ -246,46 +288,46 @@ function funcs.range_filter( img, size )
 
   -- convert image from RGB to YIQ
   il.RGB2YIQ( img )
-  
+
   local cpy_img = img:clone() -- copy of image
   local pix -- a pixel
-  
+
   -- the maximum and minimum of the intensities of the pixels in a neighborhood
   local max, min
   local hist -- the histogram of pixel intensities in a neighborhood
-  
+
   for row, col in img:pixels() do
     pix = cpy_img:at( row, col )
-    
+
     -- using sliding histogram to efficiently get the
     -- histogram of the current pixel's neighborhood
     hist = helpers.sliding_histogram( img, row, col, size )
-    
+
     -- loop from the start of the histogram until a non-zero is found
     -- this will be the minimum value in the histogram
     min = 0
     while hist[min] == 0 and min < 255 do
       min = min + 1
     end
-    
+
     -- loop from the end of the histogram until a non-zero is found
     -- this will be the maximum value in the histogram
     max = 255
     while hist[max] == 0 and max > min do
       max = max - 1
     end
-    
+
     -- calculate the intensity range and assign it to the target pixel
     pix.r = helpers.in_range( max - min )
     -- remove the color
     pix.g = 128
     pix.b = 128
-    
+
   end
-  
+
   -- convert image from YIQ to RGB
   il.YIQ2RGB( cpy_img )
-  
+
   return cpy_img
 
 end
