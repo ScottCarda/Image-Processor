@@ -263,7 +263,12 @@ function funcs.laplacian( img )
     sum = sum + 128
 
     -- assign the clipped value
-    pix.rgb[0] = helpers.in_range( math.abs( sum ) )
+    pix.r = helpers.in_range( math.abs( sum ) )
+    
+    -- remove the color
+    pix.g = 128
+    pix.b = 128
+    
   end
 
   -- convert image from YIQ to RGB
