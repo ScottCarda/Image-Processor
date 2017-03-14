@@ -60,6 +60,13 @@ function funcs.sobel( img )
   -- separated filters for the sobel partial derivative filters
   local filter1 = { -1, 0, 1 }
   local filter2 = { 1, 2, 1 }
+  --store global function calls to local variables for efficiency
+  local reflection = helpers.reflection
+  local floor = math.floor
+  local sqrt = math.sqrt
+  local in_range = helpers.in_range
+  local atan2 = math.atan2
+  local pi = math.pi
 
   -- first sweep of the image populates the x_table
   -- and y_table with the partially calculated values
@@ -68,7 +75,7 @@ function funcs.sobel( img )
     part_x = 0
     part_y = 0
     for i = 1, 3 do
-      x = helpers.reflection( col+i-2, 0, img.width )
+      x = reflection( col+i-2, 0, img.width )
       part_x = part_x + img:at( row, x ).r * filter1[i]
       part_y = part_y + img:at( row, x ).r * filter2[i]
     end
@@ -89,25 +96,25 @@ function funcs.sobel( img )
     part_x = 0
     part_y = 0
     for i = 1, 3 do
-      y = helpers.reflection( row+i-2, 0, img.height )
+      y = reflection( row+i-2, 0, img.height )
       part_x = part_x + x_table[y][col] * filter2[i]
       part_y = part_y + y_table[y][col] * filter1[i]
     end
 
     -- calculate the magnitude
-    val = math.floor( math.sqrt( part_x*part_x + part_y*part_y ) )
-    mag_pix.r = helpers.in_range( val )
+    val = floor( sqrt( part_x*part_x + part_y*part_y ) )
+    mag_pix.r = in_range( val )
 
     -- calculate the direction using arctangent
-    val = math.atan2( part_y, part_x )
+    val = atan2( part_y, part_x )
     -- adjust for negative values
     if val < 0 then
-      val = val + 2 * math.pi
+      val = val + 2 * pi
     end
 
     -- map from radians to pixel intensities
-    val = math.floor( val / ( 2 * math.pi ) * 256 )
-    dir_pix.r = helpers.in_range( val )
+    val = floor( val / ( 2 * pi ) * 256 )
+    dir_pix.r = in_range( val )
 
   end
 
@@ -120,28 +127,39 @@ function funcs.sobel( img )
 end
 
 
---[[    kirsch
+--[[    rotate_values
   |
   |  Helper function to return changing -3 and 5 locations in kirsch based on rotation.
   |  Similar to a sliding neighborhood solution.
   |
   |     Author: Chris Smith
 --]]
-local function rotate_values(i)
-  if i == 0 then
-    return { 1, 1 }, {2,3} --North East
+local function rotate_values()
+  --Note: East direction not included since the kirsch function starts with East
+  --[[if i == 0 then
+    return {1, 1}, {2, 3}--North East
   elseif i == 1 then
-    return { 2, 1 }, {1,3} --North
+    return {2, 1}, {1, 3} --North
   elseif i == 2 then
-    return { 3, 1 }, {1,2} --NW
+    return {3, 1}, {1, 2} --NW
   elseif i == 3 then
-    return { 3, 2 }, {1,1} --W
+    return {3, 2}, {1, 1} --W
   elseif i == 4 then
-    return { 3, 3 }, {2,1} --SW
+    return {3, 3}, {2, 1} --SW
   elseif i == 5 then
-    return { 2, 3 }, {3,1} --S
+    return {2, 3}, {3, 1} --S
   end
-  return { 1, 3 }, {3,2} --SE
+  return {1, 3}, {3, 2} --SE
+  --]]
+  return { {1, 2, 3, 3}, --E
+           {1, 1, 2, 3}, --NE 
+           {2, 1, 1, 3}, --N
+           {3, 1, 1, 2}, --NW
+           {3, 2, 1, 1}, --W
+           {3, 3, 2, 1}, --SW
+           {2, 3, 3, 1}, --S
+           {1, 3, 3, 2}  --SE
+          }
 end
 --[[    kirsch
   |
@@ -154,14 +172,17 @@ end
   |     Authors: Chris Smith, Scott Carda
 --]]
 function funcs.kirsch( img )
-
+--East direction of the Kirsch Compass Masks
   local kirsch_mask = {
     {-3,-3,5},
     {-3, 0,5},
     {-3,-3,5}
   }
+  --Used to keep track of the position that is changing from a -3 to 5
   local lead_val = {}
+  --Used to keep track of the position that is changing from a 5 to -3
   local trail_val = {}
+  
   local cpy_img = img:clone()
   il.RGB2YIQ( img )
 
@@ -170,45 +191,50 @@ function funcs.kirsch( img )
   local dir_pix, mag_pix
   local x, y, t_y, t_x
   local sum
-  local max, mag
-
+  local floor = math.floor
+  local in_range = helpers.in_range
+  local reflection = helpers.reflection
+  --keeps track of the rotation and max magnitude
+  local rot, mag
+  local locations = rotate_values()
   for row, col in img:pixels() do
-    dir_pix = dir_img:at( row, col )
-    mag_pix = mag_img:at( row, col )
+    dir_pix = dir_img:at(row, col)
+    mag_pix = mag_img:at(row, col)
 
-    lead_val = {1,2} 
-    trail_val = {3,3}
+    --lead_val =  {1,2} --starting position of the -3 that changes to a 5
+    --trail_val = {3,3} --starting position of the 5 that changes to a -3
     sum = 0
-    max = 0
+    rot = 0
     --Apply the kirsch filter for the east direction
     for i = 1, 3 do
-      y = helpers.reflection( (row+i-2), 0, img.height)
+      y = reflection( (row+i-2), 0, img.height)
       for j = 1, 3 do
-        x = helpers.reflection( (col+j-2), 0, img.width )
+        x = reflection( (col+j-2), 0, img.width )
         sum = sum + kirsch_mask[i][j] * img:at(y,x).r
       end
     end
     mag = sum
     --Apply the remaining kirsch filters using a sliding neighborhood method
-    for i = 0, 6 do
-      y = helpers.reflection(   row + lead_val[1] - 2, 0, img.height )
-      x = helpers.reflection(   col + lead_val[2] - 2, 0, img.width  )
-      t_y = helpers.reflection( row + trail_val[1]- 2, 0, img.height )
-      t_x = helpers.reflection( col + trail_val[2]- 2, 0, img.width  )
+    for i = 1, 7 do
+      y = reflection(   row + locations[i][1] - 2, 0, img.height )
+      x = reflection(   col + locations[i][2] - 2, 0, img.width  )
+      t_y = reflection( row + locations[i][3]- 2, 0, img.height )
+      t_x = reflection( col + locations[i][4]- 2, 0, img.width  )
       --  8 *img:at(y,x) is for a pixel changing from a -3 to  a 5 in a rotation
       -- -8 * img:at(t_y, t_x) is for a pixel changing from a 5 to a -3 in a rotation
       sum = sum  + 8 * img:at(y,x).r - 8 * img:at(t_y, t_x).r
       if( sum > mag) then
         mag = sum
-        max = i + 1
+        rot = i
       end
-      lead_val, trail_val = rotate_values(i)
+      --returns the next positions that are changing from -3 to 5 and 5 to -3
+      --lead_val, trail_val = rotate_values(i) 
     end
-    mag_pix.r = helpers.in_range( mag/3 )
+    mag_pix.r = in_range( mag/3 )
     mag_pix.g = 128
     mag_pix.b = 128
 
-    dir_pix.r = helpers.in_range( math.floor(max/8*256) )
+    dir_pix.r = in_range( floor(rot/8*256) )
     dir_pix.g = 128
     dir_pix.b = 128
   end
@@ -243,16 +269,17 @@ function funcs.laplacian( img )
   -- the neighborhood summation of the products of the
   -- intensities of pixels with their respective filter element
   local sum
-
+  local reflection = helpers.reflection
+  local in_range = helpers.in_range
   for row, col in img:pixels() do
     pix = cpy_img:at( row, col )
 
     sum = 0
     -- neighborhood loop
     for i = 1, 3 do
-      y = helpers.reflection( (row+i-2), 0, img.height )
+      y = reflection( (row+i-2), 0, img.height )
       for j = 1, 3 do
-        x = helpers.reflection( (col+j-2), 0, img.width )
+        x = reflection( (col+j-2), 0, img.width )
 
         sum = sum + img:at( y, x ).r * filter[i][j]
 
@@ -263,7 +290,7 @@ function funcs.laplacian( img )
     sum = sum + 128
 
     -- assign the clipped value
-    pix.r = helpers.in_range( math.abs( sum ) )
+    pix.r = in_range( math.abs( sum ) )
     
     -- remove the color
     pix.g = 128
@@ -300,13 +327,14 @@ function funcs.range_filter( img, size )
   -- the maximum and minimum of the intensities of the pixels in a neighborhood
   local max, min
   local hist -- the histogram of pixel intensities in a neighborhood
-
+  local sliding_histogram = helpers.sliding_histogram
+  local in_range = helpers.in_range
   for row, col in img:pixels() do
     pix = cpy_img:at( row, col )
 
     -- using sliding histogram to efficiently get the
     -- histogram of the current pixel's neighborhood
-    hist = helpers.sliding_histogram( img, row, col, size )
+    hist = sliding_histogram( img, row, col, size )
 
     -- loop from the start of the histogram until a non-zero is found
     -- this will be the minimum value in the histogram
@@ -323,7 +351,7 @@ function funcs.range_filter( img, size )
     end
 
     -- calculate the intensity range and assign it to the target pixel
-    pix.r = helpers.in_range( max - min )
+    pix.r = in_range( max - min )
     -- remove the color
     pix.g = 128
     pix.b = 128
@@ -354,9 +382,11 @@ function funcs.var_filter( img, size )
   local sum
   local sq_sum
   local n = size * size
+  local sliding_histogram = helpers.sliding_histogram
+  local in_range = helpers.in_range
   for row, col in img:pixels() do
     pix = cpy_img:at( row, col )
-    hist = helpers.sliding_histogram( img, row, col, size )
+    hist = sliding_histogram( img, row, col, size )
     sum = 0
     sq_sum = 0
     --calculate the sum and the sum of the squares of neighborhood
@@ -365,7 +395,7 @@ function funcs.var_filter( img, size )
       sq_sum = sq_sum + ( ( i * i ) * hist[i] )
     end
     --set the pixel to the variance of the neighborhood
-    pix.r = helpers.in_range((sq_sum - (sum*sum) / n ) /n)
+    pix.r = in_range((sq_sum - (sum*sum) / n ) /n)
   end
   il.YIQ2RGB ( cpy_img)
   return cpy_img
@@ -390,9 +420,11 @@ function funcs.sd_filter( img, size)
   local sq_sum
   local n = size * size
   local sqrt = math.sqrt
+  local sliding_histogram = helpers.sliding_histogram
+  local in_range = helpers.in_range
   for row, col in img:pixels() do
     pix = cpy_img:at( row, col)
-    hist = helpers.sliding_histogram( img, row, col, size )
+    hist = sliding_histogram( img, row, col, size )
     sum = 0
     sq_sum = 0
     --calculate the sum and the sum of the squares of neighborhood
@@ -401,7 +433,7 @@ function funcs.sd_filter( img, size)
       sq_sum = sq_sum + ( ( i * i ) * hist[i] )
     end
     --set pixel to the standard deviation of the neighborhood
-    pix.r = sqrt( ( sq_sum - ( sum*sum ) /n) / n)
+    pix.r = in_range( sqrt( ( sq_sum - ( sum*sum ) /n) / n) )
   end
   il.YIQ2RGB (cpy_img)
   return cpy_img
