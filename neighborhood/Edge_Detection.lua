@@ -175,18 +175,19 @@ function funcs.kirsch( img )
   local dir_pix, mag_pix
   local x, y, t_y, t_x
   local sum
+  --store global function calls to local variables for efficiency
   local floor = math.floor
   local in_range = helpers.in_range
   local reflection = helpers.reflection
+  
   --keeps track of the rotation and max magnitude
   local rot, mag
+  
+  --x y locations for -3 and 5 positions that change between rotations
   local locations = rotate_values()
   for row, col in img:pixels() do
     dir_pix = dir_img:at(row, col)
     mag_pix = mag_img:at(row, col)
-
-    --lead_val =  {1,2} --starting position of the -3 that changes to a 5
-    --trail_val = {3,3} --starting position of the 5 that changes to a -3
     sum = 0
     rot = 0
     --Apply the kirsch filter for the east direction
@@ -211,8 +212,6 @@ function funcs.kirsch( img )
         mag = sum
         rot = i
       end
-      --returns the next positions that are changing from -3 to 5 and 5 to -3
-      --lead_val, trail_val = rotate_values(i) 
     end
     mag_pix.r = in_range( mag/3 )
     mag_pix.g = 128
@@ -253,8 +252,10 @@ function funcs.laplacian( img )
   -- the neighborhood summation of the products of the
   -- intensities of pixels with their respective filter element
   local sum
+--store global function calls to local variables for efficiency
   local reflection = helpers.reflection
   local in_range = helpers.in_range
+  
   for row, col in img:pixels() do
     pix = cpy_img:at( row, col )
 
@@ -311,6 +312,8 @@ function funcs.range_filter( img, size )
   -- the maximum and minimum of the intensities of the pixels in a neighborhood
   local max, min
   local hist -- the histogram of pixel intensities in a neighborhood
+  
+  --store global function calls to local variables for efficiency
   local sliding_histogram = helpers.sliding_histogram
   local in_range = helpers.in_range
   for row, col in img:pixels() do
@@ -366,8 +369,11 @@ function funcs.var_filter( img, size )
   local sum
   local sq_sum
   local n = size * size
+  
+  --store global function calls to local variables for efficiency
   local sliding_histogram = helpers.sliding_histogram
   local in_range = helpers.in_range
+  
   for row, col in img:pixels() do
     pix = cpy_img:at( row, col )
     hist = sliding_histogram( img, row, col, size )
@@ -403,9 +409,12 @@ function funcs.sd_filter( img, size)
   local sum
   local sq_sum
   local n = size * size
+  
+  --store global function calls to local variables for efficiency
   local sqrt = math.sqrt
   local sliding_histogram = helpers.sliding_histogram
   local in_range = helpers.in_range
+  
   for row, col in img:pixels() do
     pix = cpy_img:at( row, col)
     hist = sliding_histogram( img, row, col, size )
