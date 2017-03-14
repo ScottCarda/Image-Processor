@@ -135,22 +135,6 @@ end
   |     Author: Chris Smith
 --]]
 local function rotate_values()
-  --Note: East direction not included since the kirsch function starts with East
-  --[[if i == 0 then
-    return {1, 1}, {2, 3}--North East
-  elseif i == 1 then
-    return {2, 1}, {1, 3} --North
-  elseif i == 2 then
-    return {3, 1}, {1, 2} --NW
-  elseif i == 3 then
-    return {3, 2}, {1, 1} --W
-  elseif i == 4 then
-    return {3, 3}, {2, 1} --SW
-  elseif i == 5 then
-    return {2, 3}, {3, 1} --S
-  end
-  return {1, 3}, {3, 2} --SE
-  --]]
   return { {1, 2, 3, 3}, --E
            {1, 1, 2, 3}, --NE 
            {2, 1, 1, 3}, --N
