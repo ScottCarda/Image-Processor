@@ -1,5 +1,5 @@
 --[[
-  |                           Rank_Filters.lua                                 |
+  |                             Rank_Filters.lua                               |
   |                                                                            |
   |                                                                            |
   |   This file contains the function definitions for the rank based filters   |

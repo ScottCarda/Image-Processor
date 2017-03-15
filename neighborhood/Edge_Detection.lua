@@ -1,5 +1,5 @@
 --[[
-  |                            Edge_Detection.lua                              |
+  |                           Edge_Detection.lua                               |
   |                                                                            |
   |                                                                            |
   |   This file contains the function definitions for the edge detection       |
@@ -136,14 +136,14 @@ end
 --]]
 local function rotate_values()
   return { {1, 2, 3, 3}, --E
-           {1, 1, 2, 3}, --NE 
-           {2, 1, 1, 3}, --N
-           {3, 1, 1, 2}, --NW
-           {3, 2, 1, 1}, --W
-           {3, 3, 2, 1}, --SW
-           {2, 3, 3, 1}, --S
-           {1, 3, 3, 2}  --SE
-          }
+    {1, 1, 2, 3}, --NE 
+    {2, 1, 1, 3}, --N
+    {3, 1, 1, 2}, --NW
+    {3, 2, 1, 1}, --W
+    {3, 3, 2, 1}, --SW
+    {2, 3, 3, 1}, --S
+    {1, 3, 3, 2}  --SE
+  }
 end
 --[[    kirsch
   |
@@ -166,7 +166,7 @@ function funcs.kirsch( img )
   local lead_val = {}
   --Used to keep track of the position that is changing from a 5 to -3
   local trail_val = {}
-  
+
   local cpy_img = img:clone()
   il.RGB2YIQ( img )
 
@@ -179,10 +179,10 @@ function funcs.kirsch( img )
   local floor = math.floor
   local in_range = helpers.in_range
   local reflection = helpers.reflection
-  
+
   --keeps track of the rotation and max magnitude
   local rot, mag
-  
+
   --x y locations for -3 and 5 positions that change between rotations
   local locations = rotate_values()
   for row, col in img:pixels() do
@@ -255,7 +255,7 @@ function funcs.laplacian( img )
 --store global function calls to local variables for efficiency
   local reflection = helpers.reflection
   local in_range = helpers.in_range
-  
+
   for row, col in img:pixels() do
     pix = cpy_img:at( row, col )
 
@@ -276,11 +276,11 @@ function funcs.laplacian( img )
 
     -- assign the clipped value
     pix.r = in_range( math.abs( sum ) )
-    
+
     -- remove the color
     pix.g = 128
     pix.b = 128
-    
+
   end
 
   -- convert image from YIQ to RGB
@@ -312,7 +312,7 @@ function funcs.range_filter( img, size )
   -- the maximum and minimum of the intensities of the pixels in a neighborhood
   local max, min
   local hist -- the histogram of pixel intensities in a neighborhood
-  
+
   --store global function calls to local variables for efficiency
   local sliding_histogram = helpers.sliding_histogram
   local in_range = helpers.in_range
@@ -369,11 +369,11 @@ function funcs.var_filter( img, size )
   local sum
   local sq_sum
   local n = size * size
-  
+
   --store global function calls to local variables for efficiency
   local sliding_histogram = helpers.sliding_histogram
   local in_range = helpers.in_range
-  
+
   for row, col in img:pixels() do
     pix = cpy_img:at( row, col )
     hist = sliding_histogram( img, row, col, size )
@@ -386,6 +386,8 @@ function funcs.var_filter( img, size )
     end
     --set the pixel to the variance of the neighborhood
     pix.r = in_range((sq_sum - (sum*sum) / n ) /n)
+    pix.g = 128
+    pix.b = 128
   end
   il.YIQ2RGB ( cpy_img)
   return cpy_img
@@ -409,12 +411,12 @@ function funcs.sd_filter( img, size)
   local sum
   local sq_sum
   local n = size * size
-  
+
   --store global function calls to local variables for efficiency
   local sqrt = math.sqrt
   local sliding_histogram = helpers.sliding_histogram
   local in_range = helpers.in_range
-  
+
   for row, col in img:pixels() do
     pix = cpy_img:at( row, col)
     hist = sliding_histogram( img, row, col, size )
@@ -427,6 +429,8 @@ function funcs.sd_filter( img, size)
     end
     --set pixel to the standard deviation of the neighborhood
     pix.r = in_range( sqrt( ( sq_sum - ( sum*sum ) /n) / n) )
+    pix.g = 128
+    pix.b = 128
   end
   il.YIQ2RGB (cpy_img)
   return cpy_img

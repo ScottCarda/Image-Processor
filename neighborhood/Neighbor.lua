@@ -1,5 +1,5 @@
 --[[
-  |                           Neighbor.lua                                     |
+  |                                 Neighbor.lua                               |
   |                                                                            |
   |                                                                            |
   |   This file contains the definitions neighborhood processes that use       |

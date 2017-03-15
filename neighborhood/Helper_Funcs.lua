@@ -2,7 +2,7 @@
   |                              HelperFuncs.lua                               |
   |                                                                            |
   |   This file contains various miscellaneous functions that are used commonly|
-  |in the image processing functions.                                          |
+  |   in the image processing functions.                                       |
   |                                                                            |
   |   Authors:                                                                 |
   |     Scott Carda,                                                           |
