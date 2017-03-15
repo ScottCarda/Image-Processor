@@ -151,7 +151,7 @@ end
   |  calculations at once and returns both images.
   |
   |  This Version of a kirsch uses a method similar to a sliding neighborhood so
-  |  that values are not recalculated for every kirsch rotation
+  |  that values are not recalculated for every kirsch rotation.
   |
   |     Authors: Chris Smith, Scott Carda
 --]]
@@ -357,7 +357,7 @@ end
   |  Takes an image and a neighborhood side length ( the size argument) and
   |  performs a variance filter using a square neighborhood of the given side
   |  length. This calculates the variance of the neighborhood and sets the center
-  |  pixel to the variance
+  |  pixel to the variance.
   |
   |     Author: Chris Smith
 --]]

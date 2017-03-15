@@ -3,7 +3,7 @@
   |                                                                            |
   |                                                                            |
   |   This file contains the definitions neighborhood processes that use       |
-  |   filter convlolution.                                                     |
+  |   filter convolution.                                                     |
   |                                                                            |
   |   Authors:                                                                 |
   |     Scott Carda,                                                           |
@@ -133,7 +133,7 @@ end
   |   Takes an image and a threshold value to determine if the the center pixel
   |   in a 3x3 neighborhood is correlated to the surrounding pixels. If the sum
   |   of its neighbors multiplied by 1/8 is greater than the threshold, the
-  |   pixel is deteremend to not be correlated and set to average of its neighbors
+  |   pixel is determined to not be correlated and set to average of its neighbors.
   |
   |     Author: Chris Smith
 --]]

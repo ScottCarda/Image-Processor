@@ -62,7 +62,7 @@ end
   |   Takes an image, a channel specifier, a position in the
   |   image, and a neighborhood size. Calculates the histogram for the
   |   neighborhood centered around the given image position, for the
-  |   given channel. Returns the caluclated histogram.
+  |   given channel. Returns the calculated histogram.
   |
   |     Authors: Scott Carda
 --]]
@@ -170,7 +170,7 @@ end
 
 --[[    rotate_kirsch
   |
-  |  Returns the corresponding kirsch filter for the given rotation
+  |  Returns the corresponding kirsch filter for the given rotation.
   |
   |     Author: Chris Smith
 --]]
